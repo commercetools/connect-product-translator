@@ -1,0 +1,1 @@
+This connector has sample `service` , `event`, `job` & `mc-app` applications
