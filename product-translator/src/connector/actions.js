@@ -1,14 +1,14 @@
 const PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION =
   "ct-connect-product-request-translation-state-subscription";
 
-export async function deleteState(apiRoot, stateKey) {
+export async function deleteState(apiRoot, stateDraft) {
   const {
     body: { results: states },
   } = await apiRoot
     .states()
     .get({
       queryArgs: {
-        where: `key = "${stateKey}"`,
+        where: `key = "${stateDraft.key}"`,
       },
     })
     .execute();
@@ -18,7 +18,7 @@ export async function deleteState(apiRoot, stateKey) {
 
     await apiRoot
       .states()
-      .withKey({ key: stateKey })
+      .withKey({ key: stateDraft.key })
       .delete({
         queryArgs: {
           version: state.version,
@@ -28,18 +28,12 @@ export async function deleteState(apiRoot, stateKey) {
   }
 }
 
-export async function createState(apiRoot, stateKey) {
-  await deleteState(apiRoot, stateKey);
+export async function createState(apiRoot, stateDraft) {
+  await deleteState(apiRoot, stateDraft);
   await apiRoot
     .states()
     .post({
-      body: {
-        key: stateKey,
-        name: { en: stateKey },
-        type: "ProductState",
-        roles: [],
-        initial: true,
-      },
+      body: stateDraft,
     })
     .execute();
 }

@@ -1,4 +1,10 @@
 import dotenv from "dotenv";
+import {
+  requestTranslationStatePayload,
+  inTranslationStatePayload,
+  translatedStatePayload,
+  translationFailedStatePayload,
+} from "./state-payload.js";
 dotenv.config();
 
 import { createApiRoot } from "../client/create.client.js";
@@ -19,8 +25,9 @@ async function postDeploy(properties) {
   assertString(projectId, CONNECT_GCP_PROJECT_ID_KEY);
 
   const apiRoot = createApiRoot();
-  await createState(apiRoot, "RequestTranslation");
-  await createProductStateChangedSubscription(apiRoot, topicName, projectId);
+
+  await createState(apiRoot, translationFailedStatePayload);
+  // await createProductStateChangedSubscription(apiRoot, topicName, projectId);
 }
 
 async function run() {
