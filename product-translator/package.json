@@ -6,11 +6,11 @@
   "private": true,
   "scripts": {
     "start": "node src/index.js",
-    "start:dev": "../node_modules/.bin/nodemon -q product-translator/src/index.js",
-    "lint": "../node_modules/.bin/eslint . --ext .js",
-    "prettier": "../node_modules/.bin/prettier --write '**/*.{js,ts}'",
-    "test": "../node_modules/.bin/jest --config jest.config.cjs",
-    "test:watch": "../node_modules/.bin/jest --watch",
+    "start:dev": "./node_modules/.bin/nodemon -q product-translator/src/index.js",
+    "lint": "./node_modules/.bin/eslint . --ext .js",
+    "prettier": "./node_modules/.bin/prettier --write '**/*.{js,ts}'",
+    "test": "./node_modules/.bin/jest --config jest.config.cjs",
+    "test:watch": "./node_modules/.bin/jest --watch",
     "connector:post-deploy": "node src/connector/post-deploy.js",
     "connector:pre-undeploy": "node src/connector/pre-undeploy.js"
   },
@@ -31,6 +31,7 @@
     "body-parser": "^1.20.2",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "lint": "^0.8.19",
     "openai": "^4.19.0",
     "validator": "^13.11.0"
   }

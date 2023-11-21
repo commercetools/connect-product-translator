@@ -1,50 +1,69 @@
-const CUSTOMER_CREATE_SUBSCRIPTION_KEY =
-  'myconnector-customerCreateSubscription';
+const PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION =
+  "ct-connect-product-request-translation-state-subscription";
 
-export async function createCustomerCreateSubscription(
-  apiRoot,
-  topicName,
-  projectId
-) {
+export async function deleteState(apiRoot, stateKey) {
   const {
-    body: { results: subscriptions },
+    body: { results: states },
   } = await apiRoot
-    .subscriptions()
+    .states()
     .get({
       queryArgs: {
-        where: `key = "${CUSTOMER_CREATE_SUBSCRIPTION_KEY}"`,
+        where: `key = "${stateKey}"`,
       },
     })
     .execute();
 
-  if (subscriptions.length > 0) {
-    const subscription = subscriptions[0];
+  if (states.length > 0) {
+    const state = states[0];
 
     await apiRoot
-      .subscriptions()
-      .withKey({ key: CUSTOMER_CREATE_SUBSCRIPTION_KEY })
+      .states()
+      .withKey({ key: stateKey })
       .delete({
         queryArgs: {
-          version: subscription.version,
+          version: state.version,
         },
       })
       .execute();
   }
+}
+
+export async function createState(apiRoot, stateKey) {
+  await deleteState(apiRoot, stateKey);
+  await apiRoot
+    .states()
+    .post({
+      body: {
+        key: stateKey,
+        name: { en: stateKey },
+        type: "ProductState",
+        roles: [],
+        initial: true,
+      },
+    })
+    .execute();
+}
+export async function createProductStateChangedSubscription(
+  apiRoot,
+  topicName,
+  projectId,
+) {
+  await deleteProductStateChangedSubscription(apiRoot);
 
   await apiRoot
     .subscriptions()
     .post({
       body: {
-        key: CUSTOMER_CREATE_SUBSCRIPTION_KEY,
+        key: PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION,
         destination: {
-          type: 'GoogleCloudPubSub',
+          type: "GoogleCloudPubSub",
           topic: topicName,
           projectId,
         },
         messages: [
           {
-            resourceTypeId: 'customer',
-            types: ['CustomerCreated'],
+            resourceTypeId: "product",
+            types: ["ProductStateTransition"],
           },
         ],
       },
@@ -52,14 +71,14 @@ export async function createCustomerCreateSubscription(
     .execute();
 }
 
-export async function deleteCustomerCreateSubscription(apiRoot) {
+export async function deleteProductStateChangedSubscription(apiRoot) {
   const {
     body: { results: subscriptions },
   } = await apiRoot
     .subscriptions()
     .get({
       queryArgs: {
-        where: `key = "${CUSTOMER_CREATE_SUBSCRIPTION_KEY}"`,
+        where: `key = "${PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION}"`,
       },
     })
     .execute();
@@ -69,7 +88,7 @@ export async function deleteCustomerCreateSubscription(apiRoot) {
 
     await apiRoot
       .subscriptions()
-      .withKey({ key: CUSTOMER_CREATE_SUBSCRIPTION_KEY })
+      .withKey({ key: PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION })
       .delete({
         queryArgs: {
           version: subscription.version,

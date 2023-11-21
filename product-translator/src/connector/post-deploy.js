@@ -1,12 +1,15 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-import { createApiRoot } from '../client/create.client.js';
-import { assertError, assertString } from '../utils/assert.utils.js';
-import { createCustomerCreateSubscription } from './actions.js';
+import { createApiRoot } from "../client/create.client.js";
+import { assertError, assertString } from "../utils/assert.utils.js";
+import {
+  createState,
+  createProductStateChangedSubscription,
+} from "./actions.js";
 
-const CONNECT_GCP_TOPIC_NAME_KEY = 'CONNECT_GCP_TOPIC_NAME';
-const CONNECT_GCP_PROJECT_ID_KEY = 'CONNECT_GCP_PROJECT_ID';
+const CONNECT_GCP_TOPIC_NAME_KEY = "CONNECT_GCP_TOPIC_NAME";
+const CONNECT_GCP_PROJECT_ID_KEY = "CONNECT_GCP_PROJECT_ID";
 
 async function postDeploy(properties) {
   const topicName = properties.get(CONNECT_GCP_TOPIC_NAME_KEY);
@@ -16,7 +19,8 @@ async function postDeploy(properties) {
   assertString(projectId, CONNECT_GCP_PROJECT_ID_KEY);
 
   const apiRoot = createApiRoot();
-  await createCustomerCreateSubscription(apiRoot, topicName, projectId);
+  await createState(apiRoot, "RequestTranslation");
+  await createProductStateChangedSubscription(apiRoot, topicName, projectId);
 }
 
 async function run() {
@@ -24,6 +28,7 @@ async function run() {
     const properties = new Map(Object.entries(process.env));
     await postDeploy(properties);
   } catch (error) {
+    console.error(error);
     assertError(error);
     process.stderr.write(`Post-deploy failed: ${error.message}\n`);
     process.exitCode = 1;
