@@ -1,5 +1,4 @@
 import {
-  initialStateDraft,
   requestTranslationStateDraft,
   translationInProgressStateDraft,
   translatedStateDraft,
@@ -28,7 +27,7 @@ async function postDeploy(properties) {
   await createState(apiRoot, translatedStateDraft);
   await createState(apiRoot, translationInProgressStateDraft);
   await createState(apiRoot, requestTranslationStateDraft);
-  await createState(apiRoot, initialStateDraft);
+
   await createProductStateChangedSubscription(apiRoot, topicName, projectId);
 }
 

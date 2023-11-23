@@ -1,19 +1,5 @@
 import { STATES_MAP } from "../constants.js";
 
-const initialStateDraft = {
-  key: STATES_MAP.INITIAL,
-  name: { en: "Initial" },
-  type: "ProductState",
-  roles: [],
-  transitions: [
-    {
-      typeId: "state",
-      key: STATES_MAP.REQUEST_TRANSLATION,
-    },
-  ],
-  initial: true,
-};
-
 const requestTranslationStateDraft = {
   key: STATES_MAP.REQUEST_TRANSLATION,
   name: { en: "Request translation" },
@@ -60,7 +46,6 @@ const translationFailedStateDraft = {
 };
 
 export {
-  initialStateDraft,
   requestTranslationStateDraft,
   translationInProgressStateDraft,
   translatedStateDraft,
