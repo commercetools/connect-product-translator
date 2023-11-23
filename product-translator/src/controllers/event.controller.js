@@ -14,7 +14,6 @@ import { logger } from "../utils/logger.utils.js";
  * @returns
  */
 export const post = async (request, response) => {
-  console.log("Receive request");
   let customerId = undefined;
 
   // Check request body
