@@ -1,42 +1,5 @@
-const PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION =
-  "ct-connect-product-request-translation-state-subscription";
+import { PRODUCT_REQUEST_TRANSLATION_STATE_SUBSCRIPTION } from "../constants.js";
 
-export async function deleteState(apiRoot, stateDraft) {
-  const {
-    body: { results: states },
-  } = await apiRoot
-    .states()
-    .get({
-      queryArgs: {
-        where: `key = "${stateDraft.key}"`,
-      },
-    })
-    .execute();
-
-  if (states.length > 0) {
-    const state = states[0];
-
-    await apiRoot
-      .states()
-      .withKey({ key: stateDraft.key })
-      .delete({
-        queryArgs: {
-          version: state.version,
-        },
-      })
-      .execute();
-  }
-}
-
-export async function createState(apiRoot, stateDraft) {
-  await deleteState(apiRoot, stateDraft);
-  await apiRoot
-    .states()
-    .post({
-      body: stateDraft,
-    })
-    .execute();
-}
 export async function createProductStateChangedSubscription(
   apiRoot,
   topicName,
