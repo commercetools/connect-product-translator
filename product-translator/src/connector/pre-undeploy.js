@@ -1,8 +1,10 @@
 import { createApiRoot } from "../client/create.client.js";
 import { assertError } from "../utils/assert.utils.js";
+import { deleteProductStateChangedSubscription } from "./actions/subscription-actions.js";
 
 async function preUndeploy() {
   const apiRoot = createApiRoot();
+  await deleteProductStateChangedSubscription(apiRoot);
 }
 
 async function run() {

@@ -1,4 +1,4 @@
-import _ from "lodash";
+import { buildStateUpdateActions } from "../utils/connector-scripts-utils.js";
 
 async function getStates(apiRoot, stateKey) {
   const {
@@ -14,30 +14,6 @@ async function getStates(apiRoot, stateKey) {
     .execute();
 
   return states;
-}
-
-function transformTransitionIdToKey(transitions) {
-  let existingStateTransitionsWithKey = transitions.map((transition) => {
-    return {
-      typeId: transition.typeId,
-      key: transition?.obj.key,
-    };
-  });
-  return existingStateTransitionsWithKey;
-}
-function buildUpdateActions(existingState, stateDraft) {
-  const actions = [];
-  if (existingState.transitions)
-    existingState.transitions = transformTransitionIdToKey(
-      existingState.transitions,
-    );
-  if (!_.isEqual(existingState.transitions, stateDraft.transitions))
-    actions.push({
-      action: "setTransitions",
-      transitions: stateDraft.transitions,
-    });
-
-  return actions;
 }
 
 async function updateState(apiRoot, existingState, stateDraft) {
