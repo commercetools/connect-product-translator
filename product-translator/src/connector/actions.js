@@ -1,10 +1,10 @@
 const CUSTOMER_CREATE_SUBSCRIPTION_KEY =
-  'myconnector-customerCreateSubscription';
+  "myconnector-customerCreateSubscription";
 
 export async function createCustomerCreateSubscription(
   apiRoot,
   topicName,
-  projectId
+  projectId,
 ) {
   const {
     body: { results: subscriptions },
@@ -37,14 +37,14 @@ export async function createCustomerCreateSubscription(
       body: {
         key: CUSTOMER_CREATE_SUBSCRIPTION_KEY,
         destination: {
-          type: 'GoogleCloudPubSub',
+          type: "GoogleCloudPubSub",
           topic: topicName,
           projectId,
         },
         messages: [
           {
-            resourceTypeId: 'customer',
-            types: ['CustomerCreated'],
+            resourceTypeId: "customer",
+            types: ["CustomerCreated"],
           },
         ],
       },

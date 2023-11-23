@@ -1,6 +1,6 @@
-import { createApiRoot } from '../client/create.client.js';
-import CustomError from '../errors/custom.error.js';
-import { logger } from '../utils/logger.utils.js';
+import { createApiRoot } from "../client/create.client.js";
+import CustomError from "../errors/custom.error.js";
+import { logger } from "../utils/logger.utils.js";
 
 /**
  * Exposed event POST endpoint.
@@ -18,14 +18,14 @@ export const post = async (request, response) => {
 
   // Check request body
   if (!request.body) {
-    logger.error('Missing request body.');
-    throw new CustomError(400, 'Bad request: No Pub/Sub message was received');
+    logger.error("Missing request body.");
+    throw new CustomError(400, "Bad request: No Pub/Sub message was received");
   }
 
   // Check if the body comes in a message
   if (!request.body.message) {
-    logger.error('Missing body message');
-    throw new CustomError(400, 'Bad request: Wrong No Pub/Sub message format');
+    logger.error("Missing body message");
+    throw new CustomError(400, "Bad request: Wrong No Pub/Sub message format");
   }
 
   // Receive the Pub/Sub message
@@ -34,7 +34,7 @@ export const post = async (request, response) => {
   // For our example we will use the customer id as a var
   // and the query the commercetools sdk with that info
   const decodedData = pubSubMessage.data
-    ? Buffer.from(pubSubMessage.data, 'base64').toString().trim()
+    ? Buffer.from(pubSubMessage.data, "base64").toString().trim()
     : undefined;
 
   if (decodedData) {
@@ -46,7 +46,7 @@ export const post = async (request, response) => {
   if (!customerId) {
     throw new CustomError(
       400,
-      'Bad request: No customer id in the Pub/Sub message'
+      "Bad request: No customer id in the Pub/Sub message",
     );
   }
 

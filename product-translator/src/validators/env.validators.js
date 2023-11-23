@@ -3,52 +3,52 @@ import {
   standardString,
   standardKey,
   region,
-} from './helpers.validators.js';
+} from "./helpers.validators.js";
 
 /**
  * Create here your own validators
  */
 const envValidators = [
   standardString(
-    ['clientId'],
+    ["clientId"],
     {
-      code: 'InValidClientId',
-      message: 'Client id should be 24 characters.',
-      referencedBy: 'environmentVariables',
+      code: "InValidClientId",
+      message: "Client id should be 24 characters.",
+      referencedBy: "environmentVariables",
     },
-    { min: 24, max: 24 }
+    { min: 24, max: 24 },
   ),
 
   standardString(
-    ['clientSecret'],
+    ["clientSecret"],
     {
-      code: 'InvalidClientSecret',
-      message: 'Client secret should be 32 characters.',
-      referencedBy: 'environmentVariables',
+      code: "InvalidClientSecret",
+      message: "Client secret should be 32 characters.",
+      referencedBy: "environmentVariables",
     },
-    { min: 32, max: 32 }
+    { min: 32, max: 32 },
   ),
 
-  standardKey(['projectKey'], {
-    code: 'InvalidProjectKey',
-    message: 'Project key should be a valid string.',
-    referencedBy: 'environmentVariables',
+  standardKey(["projectKey"], {
+    code: "InvalidProjectKey",
+    message: "Project key should be a valid string.",
+    referencedBy: "environmentVariables",
   }),
 
   optional(standardString)(
-    ['scope'],
+    ["scope"],
     {
-      code: 'InvalidScope',
-      message: 'Scope should be at least 2 characters long.',
-      referencedBy: 'environmentVariables',
+      code: "InvalidScope",
+      message: "Scope should be at least 2 characters long.",
+      referencedBy: "environmentVariables",
     },
-    { min: 2, max: undefined }
+    { min: 2, max: undefined },
   ),
 
-  region(['region'], {
-    code: 'InvalidRegion',
-    message: 'Not a valid region.',
-    referencedBy: 'environmentVariables',
+  region(["region"], {
+    code: "InvalidRegion",
+    message: "Not a valid region.",
+    referencedBy: "environmentVariables",
   }),
 ];
 

@@ -1,4 +1,4 @@
-import { readConfiguration } from '../utils/config.utils.js';
+import { readConfiguration } from "../utils/config.utils.js";
 
 /**
  * Configure Middleware. Example only. Adapt on your own
@@ -10,5 +10,5 @@ export const authMiddlewareOptions = {
     clientId: readConfiguration().clientId,
     clientSecret: readConfiguration().clientSecret,
   },
-  scopes: [readConfiguration().scope ? readConfiguration().scope : 'default'],
+  scopes: [readConfiguration().scope ? readConfiguration().scope : "default"],
 };

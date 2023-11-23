@@ -1,4 +1,4 @@
-import { readConfiguration } from '../utils/config.utils.js';
+import { readConfiguration } from "../utils/config.utils.js";
 
 /**
  * Configure Middleware. Example only. Adapt on your own

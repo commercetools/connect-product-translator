@@ -1,4 +1,4 @@
-import CustomError from '../errors/custom.error.js';
+import CustomError from "../errors/custom.error.js";
 
 /**
  * Middleware for error handling
@@ -10,7 +10,7 @@ import CustomError from '../errors/custom.error.js';
  */
 export const errorMiddleware = (error, _req, res, _next) => {
   if (error instanceof CustomError) {
-    if (typeof error.statusCode === 'number') {
+    if (typeof error.statusCode === "number") {
       res.status(error.statusCode).json({
         message: error.message,
         errors: error.errors,
@@ -20,5 +20,5 @@ export const errorMiddleware = (error, _req, res, _next) => {
     }
   }
 
-  res.status(500).send('Internal server error');
+  res.status(500).send("Internal server error");
 };

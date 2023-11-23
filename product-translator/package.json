@@ -7,10 +7,10 @@
   "scripts": {
     "start": "node src/index.js",
     "start:dev": "../node_modules/.bin/nodemon -q product-translator/src/index.js",
-    "lint": "../node_modules/.bin/eslint . --ext .js",
-    "prettier": "../node_modules/.bin/prettier --write '**/*.{js,ts}'",
-    "test": "../node_modules/.bin/jest --config jest.config.cjs",
-    "test:watch": "../node_modules/.bin/jest --watch",
+    "lint": "./node_modules/.bin/eslint . --ext .js",
+    "prettier": "./node_modules/.bin/prettier --write '**/*.{js,ts}'",
+    "test": "./node_modules/.bin/jest --config jest.config.cjs",
+    "test:watch": "./node_modules/.bin/jest --watch",
     "connector:post-deploy": "node src/connector/post-deploy.js",
     "connector:pre-undeploy": "node src/connector/pre-undeploy.js"
   },
