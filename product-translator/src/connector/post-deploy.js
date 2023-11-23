@@ -1,6 +1,6 @@
 import {
   requestTranslationStateDraft,
-  translationInProgressStateDraft,
+  translationInProcessStateDraft,
   translatedStateDraft,
   translationFailedStateDraft,
 } from "./payloads/state-payload.js";
@@ -25,7 +25,7 @@ async function postDeploy(properties) {
 
   await createState(apiRoot, translationFailedStateDraft);
   await createState(apiRoot, translatedStateDraft);
-  await createState(apiRoot, translationInProgressStateDraft);
+  await createState(apiRoot, translationInProcessStateDraft);
   await createState(apiRoot, requestTranslationStateDraft);
 
   await createProductStateChangedSubscription(apiRoot, topicName, projectId);

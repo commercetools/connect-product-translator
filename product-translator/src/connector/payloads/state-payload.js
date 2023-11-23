@@ -8,14 +8,14 @@ const requestTranslationStateDraft = {
   transitions: [
     {
       typeId: "state",
-      key: STATES_MAP.TRANSLATION_IN_PROGRESS,
+      key: STATES_MAP.TRANSLATION_IN_PROCESS,
     },
   ],
   initial: true,
 };
-const translationInProgressStateDraft = {
-  key: STATES_MAP.TRANSLATION_IN_PROGRESS,
-  name: { en: "Translation in progress" },
+const translationInProcessStateDraft = {
+  key: STATES_MAP.TRANSLATION_IN_PROCESS,
+  name: { en: "Translation in process" },
   type: "ProductState",
   roles: [],
   transitions: [
@@ -47,7 +47,7 @@ const translationFailedStateDraft = {
 
 export {
   requestTranslationStateDraft,
-  translationInProgressStateDraft,
+  translationInProcessStateDraft,
   translatedStateDraft,
   translationFailedStateDraft,
 };
