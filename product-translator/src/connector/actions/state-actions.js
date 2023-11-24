@@ -17,7 +17,7 @@ async function getStates(apiRoot, stateKey) {
 }
 
 async function updateState(apiRoot, existingState, stateDraft) {
-  const updateActions = buildUpdateActions(existingState, stateDraft);
+  const updateActions = buildStateUpdateActions(existingState, stateDraft);
 
   if (updateActions.length > 0) {
     await apiRoot

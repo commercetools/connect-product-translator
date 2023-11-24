@@ -1,8 +1,7 @@
 import OpenAI from "openai";
+import { logger } from "../utils/logger.utils.js";
 
 async function getAIChat() {
-  console.log(process.env.OPENAI_API_KEY);
-
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
   });
@@ -20,7 +19,7 @@ async function getAIChat() {
   });
 
   const translatedMessage = completion.choices[0]?.message?.content;
-  console.log(translatedMessage);
+  logger.info(translatedMessage);
 
   // const chatCompletion = await openai.chat.completions.create({
   //     messages: [{ role: "user", content: "Say this is a test" }],
