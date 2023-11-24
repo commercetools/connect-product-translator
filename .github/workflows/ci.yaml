@@ -1,0 +1,31 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-product-translator:
+    name: Build the application for product-translator
+    runs-on: ubuntu-latest
+    env:
+      CTP_CLIENT_ID: ${{ secrets.CTP_CLIENT_ID }}
+      CTP_CLIENT_SECRET: ${{ secrets.CTP_CLIENT_SECRET }}
+      CTP_PROJECT_KEY: ${{ secrets.CTP_PROJECT_KEY }}
+      CTP_SCOPE: ${{ secrets.CTP_SCOPE }}
+      CTP_REGION: ${{ secrets.CTP_REGION }}
+    defaults:
+      run:
+        working-directory: product-translator
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'
+
+      - name: Install modules
+        run: npm ci
+
+      - name: Check the coding style
+        run: npm run lint && npm run prettier

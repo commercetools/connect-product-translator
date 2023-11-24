@@ -13,7 +13,7 @@ import { logger } from "../utils/logger.utils.js";
  * @param {Response} response The express response
  * @returns
  */
-export const post = async (request, response) => {
+export const translationHandler = async (request, response) => {
   let customerId = undefined;
 
   // Check request body
