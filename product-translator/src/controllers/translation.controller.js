@@ -1,68 +1,28 @@
-import { createApiRoot } from "../client/create.client.js";
-import CustomError from "../errors/custom.error.js";
 import { logger } from "../utils/logger.utils.js";
+import {
+  HTTP_STATUS_SERVER_ERROR,
+  HTTP_STATUS_SUCCESS_NO_CONTENT,
+} from "../constants/http-status.constants.js";
+import { validateRequest } from "../validators/message.validators.js";
+import { decodeToJson } from "../utils/decoder.utils.js";
 
-/**
- * Exposed event POST endpoint.
- * Receives the Pub/Sub message and works with it
- *
- * @typedef {import("express").Response} Response
- * @typedef {import("express").Request} Request
- *
- * @param {Request} request The express request
- * @param {Response} response The express response
- * @returns
- */
 export const translationHandler = async (request, response) => {
-  let customerId = undefined;
-
-  // Check request body
-  if (!request.body) {
-    logger.error("Missing request body.");
-    throw new CustomError(400, "Bad request: No Pub/Sub message was received");
-  }
-
-  // Check if the body comes in a message
-  if (!request.body.message) {
-    logger.error("Missing body message");
-    throw new CustomError(400, "Bad request: Wrong No Pub/Sub message format");
-  }
-
-  // Receive the Pub/Sub message
-  const pubSubMessage = request.body.message;
-
-  // For our example we will use the customer id as a var
-  // and the query the commercetools sdk with that info
-  const decodedData = pubSubMessage.data
-    ? Buffer.from(pubSubMessage.data, "base64").toString().trim()
-    : undefined;
-
-  if (decodedData) {
-    const jsonData = JSON.parse(decodedData);
-
-    customerId = jsonData.customer.id;
-  }
-
-  if (!customerId) {
-    throw new CustomError(
-      400,
-      "Bad request: No customer id in the Pub/Sub message",
-    );
-  }
-
   try {
-    const customer = await createApiRoot()
-      .customers()
-      .withId({ ID: Buffer.from(customerId).toString() })
-      .get()
-      .execute();
+    logger.info("Received product state changed message.");
+    validateRequest(request);
 
-    // Execute the tasks in need
-    logger.info(customer);
-  } catch (error) {
-    throw new CustomError(400, `Bad request: ${error}`);
+    // Receive the Pub/Sub message
+    const encodedPubSubMessage = request.body.message.data;
+    const pubSubMessage = decodeToJson(encodedPubSubMessage);
+    logger.info(JSON.stringify(pubSubMessage));
+
+    // TODO : Invoke OpenAI to do translation
+  } catch (err) {
+    logger.error(err);
+    if (err.statusCode) return response.status(err.statusCode).send(err);
+    return response.status(HTTP_STATUS_SERVER_ERROR).send(err);
   }
 
   // Return the response for the client
-  response.status(204).send();
+  return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 };

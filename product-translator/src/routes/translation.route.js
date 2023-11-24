@@ -4,6 +4,6 @@ import { translationHandler } from "../controllers/translation.controller.js";
 
 const translationRouter = Router();
 
-translationRouter.post("/product-translator", translationHandler);
+translationRouter.post("/productTranslator", translationHandler);
 
 export default translationRouter;
