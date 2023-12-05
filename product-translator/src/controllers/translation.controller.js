@@ -6,6 +6,25 @@ import {
 import { validateRequest } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
 
+const captureProduct = async (pubSubMessage) => {
+  //TODO : Get Product from CT
+  return pubSubMessage;
+};
+
+const getLanguageList = (product) => {
+  // TODO :
+  //  1. Check product name, assuming only 1 locale has been initialized with value. If more than 1 initialized locale, assuming the higher in alphabetical order is the source of translation language.
+  //  2. Map the required languages by locale. e.g. if locales en_GB, de_CH, de_DE are involved, they will be mapped into language list ['german'] excluding the source locale en_GB.
+  return product;
+};
+
+const transformProductToString = (product) => {
+  // TODO :
+  //  1. Based on the value from source locale, convert various product attributes into a single line per locale in following pattern
+  //  name|slug|metaTitle|[attributeValue1,attributeValue2, attributeLabel3, ...]
+  return product;
+};
+
 export const translationHandler = async (request, response) => {
   try {
     logger.info("Received product state changed message.");
@@ -17,6 +36,11 @@ export const translationHandler = async (request, response) => {
     logger.info(JSON.stringify(pubSubMessage));
 
     // TODO : Invoke OpenAI to do translation
+    const product = await captureProduct(pubSubMessage);
+    const languageList = getLanguageList(product);
+    const translationString = transformProductToString(product);
+    logger.info(languageList);
+    logger.info(translationString);
   } catch (err) {
     logger.error(err);
     if (err.statusCode) return response.status(err.statusCode).send(err);
