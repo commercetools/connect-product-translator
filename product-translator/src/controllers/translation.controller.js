@@ -13,7 +13,8 @@ import {
   getProductById,
   updateProductState,
 } from "../client/products.client.js";
-
+import { getLanguages } from "../client/languages.client.js";
+import { getPrimaryLang } from "../utils/languages.utils.js";
 const changeProductToTranslationInProgressState = async (product) => {
   await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
 };
@@ -21,21 +22,38 @@ const changeProductToTranslationInProgressState = async (product) => {
 const retrieveProduct = async (pubSubMessage) => {
   const productId = pubSubMessage.resource.id;
   const product = await getProductById(productId);
+
   return product;
 };
 
-const getLanguageList = (product) => {
-  // TODO :
-  //  1. Check product name, assuming only 1 locale has been initialized with value. If more than 1 initialized locale, assuming the higher in alphabetical order is the source of translation language.
-  //  2. Map the required languages by locale. e.g. if locales en_GB, de_CH, de_DE are involved, they will be mapped into language list ['german'] excluding the source locale en_GB.
-  return product;
+const loadLanguageList = async () => {
+  const languages = await getLanguages();
+  return languages;
 };
 
-const transformProductToString = (product) => {
-  // TODO :
-  //  1. Based on the value from source locale, convert various product attributes into a single line per locale in following pattern
-  //  name|slug|metaTitle|[attributeValue1,attributeValue2, attributeLabel3, ...]
-  return product;
+const transformProductToString = (product, languages) => {
+  // Determine the primary language from product name
+  const productName = product.masterData.staged.name;
+  const primaryLanguage = getPrimaryLang(productName, languages);
+
+  // Transform product into a single line in following pattern based on the value of primary language.
+  // name|description|metaDescription|metaKeywords|metaTitle|slug
+  const primaryProductName = productName[primaryLanguage];
+  const primaryProductDescription =
+    product.masterData.staged.description[primaryLanguage];
+  const primaryProductMetaDescription =
+    product.masterData.staged.metaDescription[primaryLanguage];
+  const primaryProductMetaKeywords =
+    product.masterData.staged.metaKeywords[primaryLanguage];
+  const primaryProductMetaTitle =
+    product.masterData.staged.metaTitle[primaryLanguage];
+  const primaryProductSlug = product.masterData.staged.slug[primaryLanguage];
+
+  // TODO
+  //  1. Identify attributes from product type which belongs to localized String.
+  //  2. Transform the product attributes into String.
+
+  return `${primaryProductName}|${primaryProductDescription}|${primaryProductMetaDescription}|${primaryProductMetaKeywords}|${primaryProductMetaTitle}|${primaryProductSlug}`;
 };
 
 export const translationHandler = async (request, response) => {
@@ -47,16 +65,19 @@ export const translationHandler = async (request, response) => {
     const encodedPubSubMessage = request.body.message.data;
     const pubSubMessage = decodeToJson(encodedPubSubMessage);
     logger.info(JSON.stringify(pubSubMessage));
-    const isRequestTranslationState =
-      await isRequestTranslationStateMessage(pubSubMessage);
+    const isRequestTranslationState = true;
+    await isRequestTranslationStateMessage(pubSubMessage);
 
     if (isRequestTranslationState) {
       const product = await retrieveProduct(pubSubMessage);
       await changeProductToTranslationInProgressState(product);
-      const languageList = getLanguageList(product);
-      const translationString = transformProductToString(product);
-      logger.info(languageList);
-      logger.info(translationString);
+      const languages = await loadLanguageList();
+      const translationString = transformProductToString(product, languages);
+      logger.info(JSON.stringify(translationString));
+
+      // TODO
+      //  1. Send translationString to OpenAI
+      //  2. Place the result to those localized Strings in the product
     }
   } catch (err) {
     logger.error(err);

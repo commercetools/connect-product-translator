@@ -1,20 +1,22 @@
 import { LANGUAGES } from "../constants/languages.constants.js";
+import { logger } from "./logger.utils.js";
 
 const getPrimaryLang = (productName, languages) => {
   let primaryLang = undefined;
   languages.forEach((language) => {
-    console.log(`${language} : ${productName[language]}`);
     if (productName[language] && !primaryLang) primaryLang = language;
   });
   return primaryLang;
 };
 
 const getLanguageName = (language) => {
+  let languageName;
   if (language.length < 2) {
-    //TODO : Throw error due to invalid lanague code
+    logger.error(`Incorrect language : ${language}`);
+  } else {
+    const languageCode = language.substring(0, 2);
+    languageName = LANGUAGES[languageCode];
   }
-  const languageCode = language.substring(0, 2);
-  const languageName = LANGUAGES[languageCode];
   return languageName;
 };
 
