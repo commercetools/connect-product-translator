@@ -3,12 +3,25 @@ import {
   HTTP_STATUS_SERVER_ERROR,
   HTTP_STATUS_SUCCESS_NO_CONTENT,
 } from "../constants/http-status.constants.js";
-import { validateRequest } from "../validators/message.validators.js";
+import {
+  validateRequest,
+  isRequestTranslationStateMessage,
+} from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
+import { STATES } from "../constants/states.constants.js";
+import {
+  getProductById,
+  updateProductState,
+} from "../client/products.client.js";
 
-const captureProduct = async (pubSubMessage) => {
-  //TODO : Get Product from CT
-  return pubSubMessage;
+const changeProductToTranslationInProgressState = async (product) => {
+  await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
+};
+
+const retrieveProduct = async (pubSubMessage) => {
+  const productId = pubSubMessage.resource.id;
+  const product = await getProductById(productId);
+  return product;
 };
 
 const getLanguageList = (product) => {
@@ -34,13 +47,17 @@ export const translationHandler = async (request, response) => {
     const encodedPubSubMessage = request.body.message.data;
     const pubSubMessage = decodeToJson(encodedPubSubMessage);
     logger.info(JSON.stringify(pubSubMessage));
+    const isRequestTranslationState =
+      await isRequestTranslationStateMessage(pubSubMessage);
 
-    // TODO : Invoke OpenAI to do translation
-    const product = await captureProduct(pubSubMessage);
-    const languageList = getLanguageList(product);
-    const translationString = transformProductToString(product);
-    logger.info(languageList);
-    logger.info(translationString);
+    if (isRequestTranslationState) {
+      const product = await retrieveProduct(pubSubMessage);
+      await changeProductToTranslationInProgressState(product);
+      const languageList = getLanguageList(product);
+      const translationString = transformProductToString(product);
+      logger.info(languageList);
+      logger.info(translationString);
+    }
   } catch (err) {
     logger.error(err);
     if (err.statusCode) return response.status(err.statusCode).send(err);

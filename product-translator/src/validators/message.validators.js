@@ -2,6 +2,8 @@ import CustomError from "../errors/custom.error.js";
 import { HTTP_STATUS_SUCCESS_ACCEPTED } from "../constants/http-status.constants.js";
 import { MESSAGE_TYPE } from "../constants/message-type.constants.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
+import { STATES } from "../constants/states.constants.js";
+import { getStateByKey } from "../client/states.client.js";
 
 function validateRequest(request) {
   // Check request body
@@ -42,4 +44,13 @@ function validateRequest(request) {
     );
   }
 }
-export { validateRequest };
+
+async function isRequestTranslationStateMessage(messageBody) {
+  const stateId = messageBody?.state.id;
+  const state = await getStateByKey(STATES.REQUEST_TRANSLATION);
+  if (state.id !== stateId) {
+    return false;
+  }
+  return true;
+}
+export { validateRequest, isRequestTranslationStateMessage };

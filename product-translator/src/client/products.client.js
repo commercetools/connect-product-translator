@@ -1,0 +1,47 @@
+import { createApiRoot } from "./create.client.js";
+import CustomError from "../errors/custom.error.js";
+import { HTTP_STATUS_SUCCESS_ACCEPTED } from "../constants/http-status.constants.js";
+const queryArgs = {
+  withTotal: false,
+  expand: ["cart"],
+};
+
+export async function getProductById(productId) {
+  return await createApiRoot()
+    .products()
+    .withId({
+      ID: Buffer.from(productId).toString(),
+    })
+    .get({ queryArgs })
+    .execute()
+    .then((response) => response.body)
+    .catch((error) => {
+      throw new CustomError(HTTP_STATUS_SUCCESS_ACCEPTED, error.message, error);
+    });
+}
+
+export async function updateProductState(product, stateKey) {
+  return await createApiRoot()
+    .products()
+    .withId({
+      ID: Buffer.from(product.id).toString(),
+    })
+    .post({
+      body: {
+        version: product.version,
+        actions: [
+          {
+            action: "transitionState",
+            state: {
+              typeId: "state",
+              key: stateKey,
+            },
+          },
+        ],
+      },
+    })
+    .execute()
+    .catch((error) => {
+      throw new CustomError(HTTP_STATUS_SUCCESS_ACCEPTED, error.message, error);
+    });
+}

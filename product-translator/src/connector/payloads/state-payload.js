@@ -1,44 +1,44 @@
-import { STATES_MAP } from "../constants.js";
+import { STATES } from "../../constants/states.constants.js";
 
 const requestTranslationStateDraft = {
-  key: STATES_MAP.REQUEST_TRANSLATION,
+  key: STATES.REQUEST_TRANSLATION,
   name: { en: "Request translation" },
   type: "ProductState",
   roles: [],
   transitions: [
     {
       typeId: "state",
-      key: STATES_MAP.TRANSLATION_IN_PROCESS,
+      key: STATES.TRANSLATION_IN_PROCESS,
     },
   ],
   initial: true,
 };
 const translationInProcessStateDraft = {
-  key: STATES_MAP.TRANSLATION_IN_PROCESS,
+  key: STATES.TRANSLATION_IN_PROCESS,
   name: { en: "Translation in process" },
   type: "ProductState",
   roles: [],
   transitions: [
     {
       typeId: "state",
-      key: STATES_MAP.TRANSLATED,
+      key: STATES.TRANSLATED,
     },
     {
       typeId: "state",
-      key: STATES_MAP.TRANSLATION_FAILED,
+      key: STATES.TRANSLATION_FAILED,
     },
   ],
   initial: false,
 };
 const translatedStateDraft = {
-  key: STATES_MAP.TRANSLATED,
+  key: STATES.TRANSLATED,
   name: { en: "Translated" },
   type: "ProductState",
   roles: [],
   initial: false,
 };
 const translationFailedStateDraft = {
-  key: STATES_MAP.TRANSLATION_FAILED,
+  key: STATES.TRANSLATION_FAILED,
   name: { en: "Translation failed" },
   type: "ProductState",
   roles: [],
