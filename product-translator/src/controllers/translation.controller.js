@@ -14,6 +14,7 @@ import {
   changeProductToTranslationInProgressState,
 } from "../services/product.service.js";
 import { getLanguages } from "../client/languages.client.js";
+import { getPrimaryLang } from "../utils/languages.utils";
 
 export const translationHandler = async (request, response) => {
   try {
@@ -31,7 +32,14 @@ export const translationHandler = async (request, response) => {
       const product = await retrieveProduct(pubSubMessage);
       await changeProductToTranslationInProgressState(product);
       const languages = await getLanguages();
-      const translationString = transformProductToString(product, languages);
+
+      // Determine the primary language from product name
+      const primaryLanguage = getPrimaryLang(product, languages);
+
+      const translationString = transformProductToString(
+        product,
+        primaryLanguage,
+      );
       logger.info(JSON.stringify(translationString));
 
       // TODO

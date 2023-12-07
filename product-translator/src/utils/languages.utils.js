@@ -1,7 +1,9 @@
 import { LANGUAGES } from "../constants/languages.constants.js";
 import { logger } from "./logger.utils.js";
 
-const getPrimaryLang = (productName, languages) => {
+const getPrimaryLang = (product, languages) => {
+  const productName = product.masterData.staged.name;
+
   let primaryLang = undefined;
   languages.forEach((language) => {
     if (productName[language] && !primaryLang) primaryLang = language;
