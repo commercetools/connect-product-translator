@@ -6,6 +6,7 @@ const getPrimaryLang = (productName, languages) => {
   languages.forEach((language) => {
     if (productName[language] && !primaryLang) primaryLang = language;
   });
+
   return primaryLang;
 };
 
