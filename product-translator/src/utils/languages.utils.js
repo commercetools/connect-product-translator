@@ -12,12 +12,12 @@ const defineSourceLanguage = (product, languages) => {
   return primaryLang;
 };
 
-const getLanguageName = (languageCode) => {
+const getLanguageName = (locale) => {
   let languageName;
-  if (languageCode.length < 2) {
-    logger.error(`Incorrect language : ${languageCode}`);
+  if (locale.length < 2) {
+    logger.error(`Incorrect locale : ${locale}`);
   } else {
-    const languageCode = languageCode.substring(0, 2);
+    const languageCode = locale.substring(0, 2);
     languageName = LANGUAGES[languageCode];
   }
   return languageName;

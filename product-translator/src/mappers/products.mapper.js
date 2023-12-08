@@ -1,3 +1,5 @@
+import { TRANSLATION_FIELD_POS } from "../constants/translation.constants.js";
+
 const transformProductToString = (product, language) => {
   const productName = product.masterData.staged.name?.[language];
   const productDescription =
@@ -11,7 +13,16 @@ const transformProductToString = (product, language) => {
   const productSlug = product.masterData.staged.slug?.[language] || "";
 
   // Return single line result in following pattern : name|description|metaDescription|metaKeywords|metaTitle|slug
-  return `${productName}|${productDescription}|${productMetaDescription}|${productMetaKeywords}|${productMetaTitle}|${productSlug}`;
+  const localizedFields = [];
+  localizedFields[TRANSLATION_FIELD_POS.NAME] = productName;
+  localizedFields[TRANSLATION_FIELD_POS.DESCRIPTION] = productDescription;
+  localizedFields[TRANSLATION_FIELD_POS.META_DESCRIPTION] =
+    productMetaDescription;
+  localizedFields[TRANSLATION_FIELD_POS.META_KEYWORDS] = productMetaKeywords;
+  localizedFields[TRANSLATION_FIELD_POS.META_TITLE] = productMetaTitle;
+  localizedFields[TRANSLATION_FIELD_POS.SLUG] = productSlug;
+
+  return localizedFields.join("|");
 };
 
 const transformProductAttributeToString = () => {
