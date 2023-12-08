@@ -14,7 +14,7 @@ function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   return value;
 }
 
-function buildSetProductNameUpdateAction(
+function buildChangeNameUpdateAction(
   product,
   languagesInProject,
   translationResult,
@@ -24,22 +24,132 @@ function buildSetProductNameUpdateAction(
     translationResult,
     TRANSLATION_FIELD_POS.NAME,
   );
-  const updateAction = [
-    {
-      action: "changeName",
-      name,
-    },
-  ];
+  const updateAction = {
+    action: "changeName",
+    name,
+  };
 
   return updateAction;
 }
 
-function buildUpdateActions(product, languagesInProject, translationResult) {
-  return buildSetProductNameUpdateAction(
-    product,
+function buildSetDescUpdateAction(
+  product,
+  languagesInProject,
+  translationResult,
+) {
+  const description = getUpdatedLocalizedString(
     languagesInProject,
     translationResult,
+    TRANSLATION_FIELD_POS.DESCRIPTION,
   );
+  const updateAction = {
+    action: "setDescription",
+    description,
+  };
+  return updateAction;
+}
+
+function buildSetMetaDescUpdateAction(
+  product,
+  languagesInProject,
+  translationResult,
+) {
+  const metaDescription = getUpdatedLocalizedString(
+    languagesInProject,
+    translationResult,
+    TRANSLATION_FIELD_POS.META_DESCRIPTION,
+  );
+  const updateAction = {
+    action: "setMetaDescription",
+    metaDescription,
+  };
+  return updateAction;
+}
+
+function buildSetMetaTitleUpdateAction(
+  product,
+  languagesInProject,
+  translationResult,
+) {
+  const metaTitle = getUpdatedLocalizedString(
+    languagesInProject,
+    translationResult,
+    TRANSLATION_FIELD_POS.META_TITLE,
+  );
+  const updateAction = {
+    action: "setMetaTitle",
+    metaTitle,
+  };
+  return updateAction;
+}
+
+function buildSetMetaKeywordsUpdateAction(
+  product,
+  languagesInProject,
+  translationResult,
+) {
+  const metaKeywords = getUpdatedLocalizedString(
+    languagesInProject,
+    translationResult,
+    TRANSLATION_FIELD_POS.META_KEYWORDS,
+  );
+  const updateAction = {
+    action: "setMetaKeywords",
+    metaKeywords,
+  };
+  return updateAction;
+}
+
+function buildChangeSlugUpdateAction(
+  product,
+  languagesInProject,
+  translationResult,
+) {
+  const slug = getUpdatedLocalizedString(
+    languagesInProject,
+    translationResult,
+    TRANSLATION_FIELD_POS.SLUG,
+  );
+  const updateAction = {
+    action: "changeSlug",
+    slug,
+  };
+  return updateAction;
+}
+
+function buildUpdateActions(product, languagesInProject, translationResult) {
+  const updateActions = [];
+  updateActions.push(
+    buildChangeNameUpdateAction(product, languagesInProject, translationResult),
+  );
+  updateActions.push(
+    buildSetDescUpdateAction(product, languagesInProject, translationResult),
+  );
+  updateActions.push(
+    buildSetMetaDescUpdateAction(
+      product,
+      languagesInProject,
+      translationResult,
+    ),
+  );
+  updateActions.push(
+    buildSetMetaTitleUpdateAction(
+      product,
+      languagesInProject,
+      translationResult,
+    ),
+  );
+  updateActions.push(
+    buildSetMetaKeywordsUpdateAction(
+      product,
+      languagesInProject,
+      translationResult,
+    ),
+  );
+  updateActions.push(
+    buildChangeSlugUpdateAction(product, languagesInProject, translationResult),
+  );
+  return updateActions;
 }
 
 export { buildUpdateActions };
