@@ -5,7 +5,11 @@ import {
 import { STATES } from "../constants/states.constants.js";
 
 const changeProductToTranslationInProgressState = async (product) => {
-  await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
+  const updatedProduct = await updateProductState(
+    product,
+    STATES.TRANSLATION_IN_PROCESS,
+  );
+  return updatedProduct;
 };
 
 const retrieveProduct = async (pubSubMessage) => {

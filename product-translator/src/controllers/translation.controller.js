@@ -14,7 +14,46 @@ import {
   changeProductToTranslationInProgressState,
 } from "../services/product.service.js";
 import { getLanguages } from "../client/languages.client.js";
-import { getPrimaryLang } from "../utils/languages.utils";
+import { updateProduct } from "../client/products.client.js";
+import { getPrimaryLang, getLanguageName } from "../utils/languages.utils.js";
+import { dummyTranslation } from "../externals/openai.client.js";
+
+const buildUpdateActionField = (languagesInProject, translationResult, pos) => {
+  const field = {};
+  for (const language of languagesInProject) {
+    const languageName = getLanguageName(language);
+    const translatedString = translationResult?.[languageName];
+    if (translatedString) {
+      const translatedProductName = translatedString.split("|")[pos];
+      field[language] = translatedProductName;
+    }
+  }
+  return field;
+};
+
+const buildSetProductNameUpdateAction = (
+  product,
+  languagesInProject,
+  translationResult,
+) => {
+  const name = buildUpdateActionField(languagesInProject, translationResult, 0);
+  const updateAction = [
+    {
+      action: "changeName",
+      name,
+    },
+  ];
+
+  return updateAction;
+};
+
+const buildUpdateActions = (product, languagesInProject, translationResult) => {
+  return buildSetProductNameUpdateAction(
+    product,
+    languagesInProject,
+    translationResult,
+  );
+};
 
 export const translationHandler = async (request, response) => {
   try {
@@ -29,22 +68,42 @@ export const translationHandler = async (request, response) => {
       await isRequestTranslationStateMessage(pubSubMessage);
 
     if (isRequestTranslationState) {
-      const product = await retrieveProduct(pubSubMessage);
-      await changeProductToTranslationInProgressState(product);
-      const languages = await getLanguages();
+      let product = await retrieveProduct(pubSubMessage);
+      product = await changeProductToTranslationInProgressState(product);
+
+      const languagesInProject = await getLanguages();
 
       // Determine the primary language from product name
-      const primaryLanguage = getPrimaryLang(product, languages);
-
+      const primaryLanguage = getPrimaryLang(product, languagesInProject);
       const translationString = transformProductToString(
         product,
         primaryLanguage,
       );
-      logger.info(JSON.stringify(translationString));
+      const sourceLanguageName = getLanguageName(primaryLanguage);
+      let targetLanguageNames = languagesInProject
+        .filter((language) => language !== primaryLanguage)
+        .map((language) => getLanguageName(language));
 
-      // TODO
-      //  1. Send translationString to OpenAI
-      //  2. Place the result to those localized Strings in the product
+      targetLanguageNames = targetLanguageNames.filter(
+        (element, index) => targetLanguageNames.indexOf(element) === index,
+      );
+      const translationResult = {};
+      for (const targetLanguageName of targetLanguageNames) {
+        const translatedString = await dummyTranslation(
+          translationString,
+          sourceLanguageName,
+          targetLanguageName,
+        );
+        translationResult[targetLanguageName] = translatedString;
+      }
+      translationResult[sourceLanguageName] = translationString;
+
+      const updateActions = buildUpdateActions(
+        product,
+        languagesInProject,
+        translationResult,
+      );
+      await updateProduct(product, updateActions);
     }
   } catch (err) {
     logger.error(err);
