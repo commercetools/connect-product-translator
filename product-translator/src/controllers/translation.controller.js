@@ -19,43 +19,7 @@ import { dummyTranslation } from "../externals/openai.client.js";
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
-
-function buildUpdateActionField(languagesInProject, translationResult, pos) {
-  const field = {};
-  for (const language of languagesInProject) {
-    const languageName = getLanguageName(language);
-    const translatedString = translationResult?.[languageName];
-    if (translatedString) {
-      const translatedProductName = translatedString.split("|")[pos];
-      field[language] = translatedProductName;
-    }
-  }
-  return field;
-}
-
-function buildSetProductNameUpdateAction(
-  product,
-  languagesInProject,
-  translationResult,
-) {
-  const name = buildUpdateActionField(languagesInProject, translationResult, 0);
-  const updateAction = [
-    {
-      action: "changeName",
-      name,
-    },
-  ];
-
-  return updateAction;
-}
-
-function buildUpdateActions(product, languagesInProject, translationResult) {
-  return buildSetProductNameUpdateAction(
-    product,
-    languagesInProject,
-    translationResult,
-  );
-}
+import { buildUpdateActions } from "../utils/actions.utils.js";
 
 async function translate(product, languagesInProject) {
   // Determine the source language by product name for translation purpose
