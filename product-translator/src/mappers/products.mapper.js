@@ -1,19 +1,17 @@
-const transformProductToString = (product, primaryLanguage) => {
-  // Transform product into a single line in following pattern based on the value of primary language.
-  // name|description|metaDescription|metaKeywords|metaTitle|slug
-  const primaryProductName = product.masterData.staged.name?.[primaryLanguage];
-  const primaryProductDescription =
-    product.masterData.staged.description?.[primaryLanguage] || "";
-  const primaryProductMetaDescription =
-    product.masterData.staged.metaDescription?.[primaryLanguage] || "";
-  const primaryProductMetaKeywords =
-    product.masterData.staged.metaKeywords?.[primaryLanguage] || "";
-  const primaryProductMetaTitle =
-    product.masterData.staged.metaTitle?.[primaryLanguage] || "";
-  const primaryProductSlug =
-    product.masterData.staged.slug?.[primaryLanguage] || "";
+const transformProductToString = (product, language) => {
+  const productName = product.masterData.staged.name?.[language];
+  const productDescription =
+    product.masterData.staged.description?.[language] || "";
+  const productMetaDescription =
+    product.masterData.staged.metaDescription?.[language] || "";
+  const productMetaKeywords =
+    product.masterData.staged.metaKeywords?.[language] || "";
+  const productMetaTitle =
+    product.masterData.staged.metaTitle?.[language] || "";
+  const productSlug = product.masterData.staged.slug?.[language] || "";
 
-  return `${primaryProductName}|${primaryProductDescription}|${primaryProductMetaDescription}|${primaryProductMetaKeywords}|${primaryProductMetaTitle}|${primaryProductSlug}`;
+  // Return single line result in following pattern : name|description|metaDescription|metaKeywords|metaTitle|slug
+  return `${productName}|${productDescription}|${productMetaDescription}|${productMetaKeywords}|${productMetaTitle}|${productSlug}`;
 };
 
 const transformProductAttributeToString = () => {

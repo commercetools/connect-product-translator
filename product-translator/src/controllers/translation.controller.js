@@ -9,16 +9,18 @@ import {
 } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
 import { transformProductToString } from "../mappers/products.mapper.js";
-import {
-  retrieveProduct,
-  changeProductToTranslationInProgressState,
-} from "../services/product.service.js";
 import { getLanguages } from "../client/languages.client.js";
 import { updateProduct } from "../client/products.client.js";
-import { getPrimaryLang, getLanguageName } from "../utils/languages.utils.js";
+import {
+  defineSourceLanguage,
+  getLanguageName,
+} from "../utils/languages.utils.js";
 import { dummyTranslation } from "../externals/openai.client.js";
+import { getProductById } from "../client/products.client.js";
+import { updateProductState } from "../client/products.client.js";
+import { STATES } from "../constants/states.constants.js";
 
-const buildUpdateActionField = (languagesInProject, translationResult, pos) => {
+function buildUpdateActionField(languagesInProject, translationResult, pos) {
   const field = {};
   for (const language of languagesInProject) {
     const languageName = getLanguageName(language);
@@ -29,13 +31,13 @@ const buildUpdateActionField = (languagesInProject, translationResult, pos) => {
     }
   }
   return field;
-};
+}
 
-const buildSetProductNameUpdateAction = (
+function buildSetProductNameUpdateAction(
   product,
   languagesInProject,
   translationResult,
-) => {
+) {
   const name = buildUpdateActionField(languagesInProject, translationResult, 0);
   const updateAction = [
     {
@@ -45,66 +47,93 @@ const buildSetProductNameUpdateAction = (
   ];
 
   return updateAction;
-};
+}
 
-const buildUpdateActions = (product, languagesInProject, translationResult) => {
+function buildUpdateActions(product, languagesInProject, translationResult) {
   return buildSetProductNameUpdateAction(
     product,
     languagesInProject,
     translationResult,
   );
-};
+}
 
-export const translationHandler = async (request, response) => {
+async function translate(product, languagesInProject) {
+  // Determine the source language by product name for translation purpose
+  const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
+
+  // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
+  const sourceLanguageName = getLanguageName(sourceLanguageCode);
+
+  // Transform product into a single line in based on the given language code.
+  const translationString = transformProductToString(
+    product,
+    sourceLanguageCode,
+  );
+
+  // Define a list of language name to which the product fields are going to be translated
+  // e.g. ['en_US', 'en_EN'] => ['English', 'English']
+  let targetLanguageNames = languagesInProject
+    .filter((language) => language !== sourceLanguageCode)
+    .map((language) => getLanguageName(language));
+
+  // Remove duplicated language names.
+  // e.g. ['English', 'English'] => ['English']
+  targetLanguageNames = targetLanguageNames.filter(
+    (element, index) => targetLanguageNames.indexOf(element) === index,
+  );
+
+  // Translate the product fields into multiple languages and put result into a map as follow pattern
+  // e.g
+  // { english : 'Good Morning', german: 'Guten Tag' }
+  const translationResult = {};
+  for (const targetLanguageName of targetLanguageNames) {
+    const translatedString = await dummyTranslation(
+      translationString,
+      sourceLanguageName,
+      targetLanguageName,
+    );
+    translationResult[targetLanguageName] = translatedString;
+  }
+  translationResult[sourceLanguageName] = translationString;
+  return translationResult;
+}
+
+async function translationHandler(request, response) {
   try {
     logger.info("Received product state changed message.");
+
+    // Validate request and incoming message
     validateRequest(request);
 
     // Receive the Pub/Sub message
     const encodedPubSubMessage = request.body.message.data;
     const pubSubMessage = decodeToJson(encodedPubSubMessage);
     logger.info(JSON.stringify(pubSubMessage));
+
+    // Skip handling non-translation state
     const isRequestTranslationState =
       await isRequestTranslationStateMessage(pubSubMessage);
+    if (!isRequestTranslationState)
+      return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 
-    if (isRequestTranslationState) {
-      let product = await retrieveProduct(pubSubMessage);
-      product = await changeProductToTranslationInProgressState(product);
+    const productId = pubSubMessage.resource.id;
+    let product = await getProductById(productId);
 
-      const languagesInProject = await getLanguages();
+    // Change product state to 'translation in process'
+    product = await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
 
-      // Determine the primary language from product name
-      const primaryLanguage = getPrimaryLang(product, languagesInProject);
-      const translationString = transformProductToString(
-        product,
-        primaryLanguage,
-      );
-      const sourceLanguageName = getLanguageName(primaryLanguage);
-      let targetLanguageNames = languagesInProject
-        .filter((language) => language !== primaryLanguage)
-        .map((language) => getLanguageName(language));
+    // Obtain the list of languages supported by current CT project
+    const languagesInProject = await getLanguages();
 
-      targetLanguageNames = targetLanguageNames.filter(
-        (element, index) => targetLanguageNames.indexOf(element) === index,
-      );
-      const translationResult = {};
-      for (const targetLanguageName of targetLanguageNames) {
-        const translatedString = await dummyTranslation(
-          translationString,
-          sourceLanguageName,
-          targetLanguageName,
-        );
-        translationResult[targetLanguageName] = translatedString;
-      }
-      translationResult[sourceLanguageName] = translationString;
+    // Perform translation for localized strings inside product over different languages
+    const translationResult = await translate(product, languagesInProject);
 
-      const updateActions = buildUpdateActions(
-        product,
-        languagesInProject,
-        translationResult,
-      );
-      await updateProduct(product, updateActions);
-    }
+    const updateActions = buildUpdateActions(
+      product,
+      languagesInProject,
+      translationResult,
+    );
+    await updateProduct(product, updateActions);
   } catch (err) {
     logger.error(err);
     if (err.statusCode) return response.status(err.statusCode).send(err);
@@ -113,4 +142,6 @@ export const translationHandler = async (request, response) => {
 
   // Return the response for the client
   return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
-};
+}
+
+export { translationHandler };
