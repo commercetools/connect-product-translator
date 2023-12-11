@@ -100,23 +100,6 @@ function buildSetMetaKeywordsUpdateAction(
   return updateAction;
 }
 
-function buildChangeSlugUpdateAction(
-  product,
-  languagesInProject,
-  translationResult,
-) {
-  const slug = getUpdatedLocalizedString(
-    languagesInProject,
-    translationResult,
-    TRANSLATION_FIELD_POS.SLUG,
-  );
-  const updateAction = {
-    action: "changeSlug",
-    slug,
-  };
-  return updateAction;
-}
-
 function buildUpdateActions(product, languagesInProject, translationResult) {
   const updateActions = [];
   updateActions.push(
@@ -145,9 +128,6 @@ function buildUpdateActions(product, languagesInProject, translationResult) {
       languagesInProject,
       translationResult,
     ),
-  );
-  updateActions.push(
-    buildChangeSlugUpdateAction(product, languagesInProject, translationResult),
   );
   return updateActions;
 }

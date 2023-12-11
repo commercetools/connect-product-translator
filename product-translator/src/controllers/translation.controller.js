@@ -15,13 +15,13 @@ import {
   defineSourceLanguage,
   getLanguageName,
 } from "../utils/languages.utils.js";
-import { dummyTranslation } from "../externals/openai.client.js";
+import { translate } from "../externals/openai.client.js";
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
 import { buildUpdateActions } from "../utils/actions.utils.js";
 
-async function translate(product, languagesInProject) {
+async function doTranslation(product, languagesInProject) {
   // Determine the source language by product name for translation purpose
   const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
 
@@ -51,7 +51,7 @@ async function translate(product, languagesInProject) {
   // { english : 'Good Morning', german: 'Guten Tag' }
   const translationResult = {};
   for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await dummyTranslation(
+    const translatedString = await translate(
       translationString,
       sourceLanguageName,
       targetLanguageName,
@@ -90,7 +90,7 @@ async function translationHandler(request, response) {
     const languagesInProject = await getLanguages();
 
     // Perform translation for localized strings inside product over different languages
-    const translationResult = await translate(product, languagesInProject);
+    const translationResult = await doTranslation(product, languagesInProject);
 
     const updateActions = buildUpdateActions(
       product,

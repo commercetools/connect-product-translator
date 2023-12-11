@@ -4,5 +4,4 @@ export const TRANSLATION_FIELD_POS = {
   META_DESCRIPTION: 2,
   META_KEYWORDS: 3,
   META_TITLE: 4,
-  SLUG: 5,
 };
