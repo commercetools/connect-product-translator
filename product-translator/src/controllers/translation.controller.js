@@ -63,6 +63,7 @@ async function doTranslation(product, languagesInProject) {
 }
 
 async function translationHandler(request, response) {
+  let product;
   try {
     logger.info("Received product state changed message.");
 
@@ -81,7 +82,7 @@ async function translationHandler(request, response) {
       return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 
     const productId = pubSubMessage.resource.id;
-    let product = await getProductById(productId);
+    product = await getProductById(productId);
 
     // Change product state to 'translation in process'
     product = await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
@@ -97,9 +98,15 @@ async function translationHandler(request, response) {
       languagesInProject,
       translationResult,
     );
-    await updateProduct(product, updateActions);
+    product = await updateProduct(product, updateActions);
+    await updateProductState(product, STATES.TRANSLATED);
   } catch (err) {
     logger.error(err);
+    try {
+      await updateProductState(product, STATES.TRANSLATION_FAILED);
+    } catch (updateProductStateError) {
+      logger.error(updateProductStateError);
+    }
     if (err.statusCode) return response.status(err.statusCode).send(err);
     return response.status(HTTP_STATUS_SERVER_ERROR).send(err);
   }
