@@ -100,6 +100,27 @@ function buildSetMetaKeywordsUpdateAction(
   return updateAction;
 }
 
+function buildSetAttributeUpdateActions(product, languagesInProject, translationResult, localizedStringAttributeNames) {
+  const updateActions = [];
+  const masterVariant = product.masterData.staged.masterVariant
+  console.log(translationResult) // { German: '||blaue', English: '||grey' }
+  const pos = 2
+  const value = getUpdatedLocalizedString(
+      languagesInProject,
+      translationResult,
+      pos
+  );
+  const name = localizedStringAttributeNames[2];
+  console.log(masterVariant)
+  const updateAction = {
+    action: "setAttribute",
+    variantId: masterVariant.id,
+    name,
+    value
+  }
+  return updateAction
+}
+
 function buildUpdateActions(product, languagesInProject, translationResult) {
   const updateActions = [];
   updateActions.push(
@@ -132,4 +153,4 @@ function buildUpdateActions(product, languagesInProject, translationResult) {
   return updateActions;
 }
 
-export { buildUpdateActions };
+export { buildUpdateActions, buildSetAttributeUpdateActions };
