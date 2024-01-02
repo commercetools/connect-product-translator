@@ -9,10 +9,8 @@ async function dummyTranslation(message, sourceLang, targetLang) {
 }
 
 async function dummyVariantTranslation(message, sourceLang, targetLang) {
-  if (targetLang === "German")
-    return "||blaue";
-  else if (targetLang === "English")
-    return "||grey";
+  if (targetLang === "German") return "|blaue|||||";
+  else if (targetLang === "English") return "|blue|||||";
 }
 
 async function translate(message, sourceLang, targetLang) {

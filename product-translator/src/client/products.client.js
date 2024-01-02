@@ -3,7 +3,7 @@ import CustomError from "../errors/custom.error.js";
 import { HTTP_STATUS_SUCCESS_ACCEPTED } from "../constants/http-status.constants.js";
 const queryArgs = {
   withTotal: false,
-  expand: ['productType'],
+  expand: ["productType"],
 };
 export async function getProductById(productId) {
   return await createApiRoot()
@@ -11,7 +11,7 @@ export async function getProductById(productId) {
     .withId({
       ID: Buffer.from(productId).toString(),
     })
-    .get({queryArgs})
+    .get({ queryArgs })
     .execute()
     .then((response) => response.body)
     .catch((error) => {

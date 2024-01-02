@@ -99,26 +99,35 @@ function buildSetMetaKeywordsUpdateAction(
   };
   return updateAction;
 }
-
-function buildSetAttributeUpdateActions(product, languagesInProject, translationResult, localizedStringAttributeNames) {
+function buildSetAttributeUpdateActions(
+  product,
+  languagesInProject,
+  translationResult,
+  localizedStringAttributeNames,
+) {
   const updateActions = [];
-  const masterVariant = product.masterData.staged.masterVariant
-  console.log(translationResult) // { German: '||blaue', English: '||grey' }
-  const pos = 2
-  const value = getUpdatedLocalizedString(
+  const masterVariant = product.masterData.staged.masterVariant;
+  let pos = 0;
+  for (const localizedStringAttributeName of localizedStringAttributeNames) {
+    const value = getUpdatedLocalizedString(
       languagesInProject,
       translationResult,
-      pos
-  );
-  const name = localizedStringAttributeNames[2];
-  console.log(masterVariant)
-  const updateAction = {
-    action: "setAttribute",
-    variantId: masterVariant.id,
-    name,
-    value
+      pos,
+    );
+    console.log(`${localizedStringAttributeName} : ${value}`);
+
+    const updateAction = {
+      action: "setAttribute",
+      variantId: masterVariant.id,
+      name: localizedStringAttributeName,
+      value,
+    };
+    updateActions.push(updateAction);
+
+    pos++;
   }
-  return updateAction
+
+  return updateActions;
 }
 
 function buildUpdateActions(product, languagesInProject, translationResult) {
