@@ -3,43 +3,8 @@ import {
   getLanguageName,
 } from "../utils/languages.utils.js";
 import { transformProductAttributeToString } from "../mappers/products.mapper.js";
-import {
-  translateDummySetTypeAttribute,
-  translate,
-} from "../externals/openai.client.js";
+import { executeTranslation } from "../externals/openai.client.js";
 import { isEmptyObj } from "../utils/objects.utils.js";
-
-async function translateSetTypeAttribute(
-  variantAttributeValue,
-  targetLanguageNames,
-  sourceLanguageCode,
-) {
-  // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
-  const sourceLanguageName = getLanguageName(sourceLanguageCode);
-
-  const translationList = transformProductAttributeToString(
-    variantAttributeValue,
-    sourceLanguageCode,
-  );
-
-  // Translate the product fields into multiple languages and put result into a map as follow pattern
-  // e.g
-  // { english : 'Good Morning', german: 'Guten Tag' }
-  const translationString = translationList.join("|");
-
-  let translationResult = {};
-  for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await translate(
-      translationString,
-      sourceLanguageName,
-      targetLanguageName,
-    );
-
-    translationResult[targetLanguageName] = translatedString.split("|");
-  }
-  translationResult[sourceLanguageName] = translationList;
-  return translationResult;
-}
 
 async function translateStringTypeAttribute(
   variantAttributeValue,
@@ -60,7 +25,7 @@ async function translateStringTypeAttribute(
   let translationResult = {};
   if (translationString) {
     for (const targetLanguageName of targetLanguageNames) {
-      const translatedString = await translate(
+      const translatedString = await executeTranslation(
         translationString,
         sourceLanguageName,
         targetLanguageName,
@@ -73,7 +38,7 @@ async function translateStringTypeAttribute(
   return translationResult;
 }
 
-async function translateVariant(
+async function translate(
   product,
   languagesInProject,
   localizedStringAttributeNames,
@@ -105,36 +70,19 @@ async function translateVariant(
     )[0];
 
     if (Array.isArray(masterVariantAttributeValue)) {
-      const result = await translateSetTypeAttribute(
+      // TODO : translate Set type attribute
+    } else {
+      const result = await translateStringTypeAttribute(
         masterVariantAttributeValue,
         targetLanguageNames,
         sourceLanguageCode,
       );
-      translationResult[localizedStringAttributeName] = result;
-    } else {
-      // TODO : fake AI call
-      // const result = await translateStringTypeAttribute(
-      //   masterVariantAttributeValue,
-      //   targetLanguageNames,
-      //   sourceLanguageCode,
-      // );
-      const result = "";
+
       translationResult[localizedStringAttributeName] = result;
     }
   }
-  console.log("--- translationResult ---");
-  console.log(translationResult);
-  const fakeTranslationResult = {
-    productspec: undefined,
-    color: { German: "rot", English: "red" },
-    finish: undefined,
-    colorlabel: undefined,
-    finishlabel: undefined,
-    size: { German: "groß", English: "big" },
-    "product-description": undefined,
-  };
 
-  return fakeTranslationResult;
+  return translationResult;
 }
 
-export { translateVariant };
+export { translate };

@@ -8,64 +8,19 @@ import {
   isRequestTranslationStateMessage,
 } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
-import { translateVariant } from "../services/translate-variant.service.js";
-import { transformProductToString } from "../mappers/products.mapper.js";
+import { translate as translateProduct } from "../services/translate-product.service.js";
+import { translate as translateVariant } from "../services/translate-variant.service.js";
+
 import { getLanguages } from "../client/languages.client.js";
 import { updateProduct } from "../client/products.client.js";
-import {
-  defineSourceLanguage,
-  getLanguageName,
-} from "../utils/languages.utils.js";
-import { dummyTranslation } from "../externals/openai.client.js";
+
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
 import {
   buildUpdateActions,
   buildSetAttributeUpdateActions,
-  createSetAttributeUpdateActions,
 } from "../utils/actions.utils.js";
-
-async function doTranslation(product, languagesInProject) {
-  // Determine the source language by product name for translation purpose
-  const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
-
-  // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
-  const sourceLanguageName = getLanguageName(sourceLanguageCode);
-
-  // Transform product into a single line in based on the given language code.
-  const translationString = transformProductToString(
-    product,
-    sourceLanguageCode,
-  );
-
-  // Define a list of language name to which the product fields are going to be translated
-  // e.g. ['en_US', 'en_EN'] => ['English', 'English']
-  let targetLanguageNames = languagesInProject
-    .filter((language) => language !== sourceLanguageCode)
-    .map((language) => getLanguageName(language));
-
-  // Remove duplicated language names.
-  // e.g. ['English', 'English'] => ['English']
-  targetLanguageNames = targetLanguageNames.filter(
-    (element, index) => targetLanguageNames.indexOf(element) === index,
-  );
-
-  // Translate the product fields into multiple languages and put result into a map as follow pattern
-  // e.g
-  // { english : 'Good Morning', german: 'Guten Tag' }
-  const translationResult = {};
-  for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await dummyTranslation(
-      translationString,
-      sourceLanguageName,
-      targetLanguageName,
-    );
-    translationResult[targetLanguageName] = translatedString;
-  }
-  translationResult[sourceLanguageName] = translationString;
-  return translationResult;
-}
 
 function getLocalizedStringAttributeNames(product) {
   const attributeDefinitions = product.productType.obj?.attributes;
@@ -114,7 +69,7 @@ async function translationHandler(request, response) {
     const languagesInProject = await getLanguages();
 
     // Perform translation for localized strings inside product over different languages
-    const translationResult = await doTranslation(
+    const translationResult = await translateProduct(
       updatedProduct,
       languagesInProject,
     );
@@ -132,10 +87,8 @@ async function translationHandler(request, response) {
       languagesInProject,
       localizedStringAttributeNames,
     );
-    console.log("--- variantTranslationResult ---");
-    console.log(variantTranslationResult);
 
-    const setAttributeUpdateActions = createSetAttributeUpdateActions(
+    const setAttributeUpdateActions = buildSetAttributeUpdateActions(
       updatedProduct,
       languagesInProject,
       variantTranslationResult,
@@ -143,8 +96,6 @@ async function translationHandler(request, response) {
     );
     updateActions.push(setAttributeUpdateActions);
     updateActions = updateActions.flat(Infinity);
-    console.log("--- updateActions ---");
-    console.log(updateActions);
     updatedProduct = await updateProduct(updatedProduct, updateActions);
 
     await updateProductState(updatedProduct, STATES.TRANSLATED);

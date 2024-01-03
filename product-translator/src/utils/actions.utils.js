@@ -168,7 +168,7 @@ function buildSetMetaKeywordsUpdateAction(
   return updateAction;
 }
 
-function createSetAttributeUpdateActions(
+function buildSetAttributeUpdateActions(
   product,
   languagesInProject,
   translationResult,
@@ -198,45 +198,6 @@ function createSetAttributeUpdateActions(
       };
       updateActions.push(updateAction);
     }
-  }
-
-  return updateActions;
-}
-
-function buildSetAttributeUpdateActions(
-  product,
-  languagesInProject,
-  translationResult,
-  localizedStringAttributeNames,
-) {
-  const updateActions = [];
-  const masterVariant = product.masterData.staged.masterVariant;
-  let pos = 0;
-  for (const localizedStringAttributeName of localizedStringAttributeNames) {
-    console.log("----- translationResult -----");
-    console.log(translationResult);
-    const transformedTranslationResult = transformVariantTranslationResult(
-      languagesInProject,
-      translationResult[localizedStringAttributeName],
-    );
-    console.log("----- transformedTranslationResult -----");
-    console.log(transformedTranslationResult);
-    const value = transformedTranslationResult[localizedStringAttributeName];
-    console.log(
-      `${localizedStringAttributeName} : ${JSON.stringify(
-        transformedTranslationResult,
-      )}`,
-    );
-
-    const updateAction = {
-      action: "setAttribute",
-      variantId: masterVariant.id,
-      name: localizedStringAttributeName,
-      value: transformedTranslationResult,
-    };
-    updateActions.push(updateAction);
-
-    pos++;
   }
 
   return updateActions;
@@ -274,8 +235,4 @@ function buildUpdateActions(product, languagesInProject, translationResult) {
   return updateActions;
 }
 
-export {
-  buildUpdateActions,
-  buildSetAttributeUpdateActions,
-  createSetAttributeUpdateActions,
-};
+export { buildUpdateActions, buildSetAttributeUpdateActions };
