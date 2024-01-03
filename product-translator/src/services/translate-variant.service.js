@@ -3,14 +3,17 @@ import {
   getLanguageName,
 } from "../utils/languages.utils.js";
 import { transformProductAttributeToString } from "../mappers/products.mapper.js";
-import { translateDummySetTypeAttribute } from "../externals/openai.client.js";
+import {
+  translateDummySetTypeAttribute,
+  translate,
+} from "../externals/openai.client.js";
+import { isEmptyObj } from "../utils/objects.utils.js";
 
 async function translateSetTypeAttribute(
   variantAttributeValue,
   targetLanguageNames,
   sourceLanguageCode,
 ) {
-  console.log("translateSetTypeAttribute()");
   // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
   const sourceLanguageName = getLanguageName(sourceLanguageCode);
 
@@ -26,7 +29,7 @@ async function translateSetTypeAttribute(
 
   let translationResult = {};
   for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await translateDummySetTypeAttribute(
+    const translatedString = await translate(
       translationString,
       sourceLanguageName,
       targetLanguageName,
@@ -55,17 +58,19 @@ async function translateStringTypeAttribute(
   // e.g
   // { english : 'Good Morning', german: 'Guten Tag' }
   let translationResult = {};
-  for (const targetLanguageName of targetLanguageNames) {
-    // const translatedString = await translate(
-    //     translationString,
-    //     sourceLanguageName,
-    //     targetLanguageName,
-    // );
-    const translatedString = "";
-
-    translationResult[targetLanguageName] = translatedString;
+  if (translationString) {
+    for (const targetLanguageName of targetLanguageNames) {
+      const translatedString = await translate(
+        translationString,
+        sourceLanguageName,
+        targetLanguageName,
+      );
+      translationResult[targetLanguageName] = translatedString;
+    }
+    translationResult[sourceLanguageName] = translationString;
   }
-  translationResult[sourceLanguageName] = translationString;
+  if (isEmptyObj(translationResult)) return undefined;
+  return translationResult;
 }
 
 async function translateVariant(
@@ -91,7 +96,6 @@ async function translateVariant(
   const masterVariant = product.masterData.staged.masterVariant;
   const variants = product.masterData.staged.variants;
   const translationResult = {};
-  const translationResults = [];
   for (const localizedStringAttributeName of localizedStringAttributeNames) {
     let filteredMasterVariantAttributes = masterVariant?.attributes.filter(
       (attribute) => attribute.name === localizedStringAttributeName,
@@ -108,16 +112,29 @@ async function translateVariant(
       );
       translationResult[localizedStringAttributeName] = result;
     } else {
-      const result = await translateStringTypeAttribute(
-        masterVariantAttributeValue,
-        targetLanguageNames,
-        sourceLanguageCode,
-      );
+      // TODO : fake AI call
+      // const result = await translateStringTypeAttribute(
+      //   masterVariantAttributeValue,
+      //   targetLanguageNames,
+      //   sourceLanguageCode,
+      // );
+      const result = "";
       translationResult[localizedStringAttributeName] = result;
     }
   }
+  console.log("--- translationResult ---");
   console.log(translationResult);
-  return translationResult;
+  const fakeTranslationResult = {
+    productspec: undefined,
+    color: { German: "rot", English: "red" },
+    finish: undefined,
+    colorlabel: undefined,
+    finishlabel: undefined,
+    size: { German: "groß", English: "big" },
+    "product-description": undefined,
+  };
+
+  return fakeTranslationResult;
 }
 
 export { translateVariant };

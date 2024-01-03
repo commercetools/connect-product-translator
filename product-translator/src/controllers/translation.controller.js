@@ -23,6 +23,7 @@ import { STATES } from "../constants/states.constants.js";
 import {
   buildUpdateActions,
   buildSetAttributeUpdateActions,
+  createSetAttributeUpdateActions,
 } from "../utils/actions.utils.js";
 
 async function doTranslation(product, languagesInProject) {
@@ -134,7 +135,7 @@ async function translationHandler(request, response) {
     console.log("--- variantTranslationResult ---");
     console.log(variantTranslationResult);
 
-    const setAttributeUpdateActions = buildSetAttributeUpdateActions(
+    const setAttributeUpdateActions = createSetAttributeUpdateActions(
       updatedProduct,
       languagesInProject,
       variantTranslationResult,

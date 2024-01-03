@@ -1,5 +1,6 @@
 import { getLanguageName } from "./languages.utils.js";
 import { TRANSLATION_FIELD_POS } from "../constants/translation.constants.js";
+import { isEmptyObj } from "./objects.utils.js";
 
 function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   const value = {};
@@ -175,24 +176,28 @@ function createSetAttributeUpdateActions(
 ) {
   const updateActions = [];
   const masterVariant = product.masterData.staged.masterVariant;
-  let pos = 0;
+
   for (const localizedStringAttributeName of localizedStringAttributeNames) {
-    const value = getUpdatedLocalizedString(
-      languagesInProject,
-      translationResult,
-      pos,
-    );
-    console.log(`${localizedStringAttributeName} : ${JSON.stringify(value)}`);
+    const value = {};
+    for (const language of languagesInProject) {
+      const languageName = getLanguageName(language);
+      const translatedString =
+        translationResult?.[localizedStringAttributeName]?.[languageName];
+      if (translatedString) {
+        value[language] = translatedString;
+      }
+    }
+    if (!isEmptyObj(value)) {
+      console.log(`${localizedStringAttributeName} : ${JSON.stringify(value)}`);
 
-    const updateAction = {
-      action: "setAttribute",
-      variantId: masterVariant.id,
-      name: localizedStringAttributeName,
-      value,
-    };
-    updateActions.push(updateAction);
-
-    pos++;
+      const updateAction = {
+        action: "setAttribute",
+        variantId: masterVariant.id,
+        name: localizedStringAttributeName,
+        value,
+      };
+      updateActions.push(updateAction);
+    }
   }
 
   return updateActions;
@@ -269,4 +274,8 @@ function buildUpdateActions(product, languagesInProject, translationResult) {
   return updateActions;
 }
 
-export { buildUpdateActions, buildSetAttributeUpdateActions };
+export {
+  buildUpdateActions,
+  buildSetAttributeUpdateActions,
+  createSetAttributeUpdateActions,
+};
