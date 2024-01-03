@@ -15,73 +15,6 @@ function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   return value;
 }
 
-function transformVariantTranslationResult(
-  languagesInProject,
-  translatedAttributeResult,
-) {
-  let value = {};
-
-  /** translatedAttributeResult = {
-    German: [ 'rotes Auto', 'blaues Auto' ],
-    English: [ 'blue car', 'red car' ]
-  }
-  **/
-  console.log("--- translatedAttributeResult ---");
-  console.log(translatedAttributeResult);
-  for (const language of languagesInProject) {
-    const languageName = getLanguageName(language);
-    const translatedValue = translatedAttributeResult?.[languageName];
-
-    if (translatedValue) {
-      value[language] = translatedValue;
-    }
-    console.log("--- Translated Value ---");
-    console.log(translatedValue);
-    console.log(Array.isArray(translatedValue));
-  }
-  /** value = {
-    de-DE : rotes Auto,blaues Auto
-    en-GB : blue car,red car
-    en-US : blue car,red car
-  } **/
-
-  /** typeValue =
-   * [
-      {
-        "en-GB": "red car",
-        "en-US": "red car",
-        "de-DE": "rotes Auto"
-      },
-      {
-        "en-GB": "blue car"
-        "en-US": "blue car",
-        "de-DE": "blaues Auto"
-      }
-   ]
-   * @type {number}
-   */
-  let sizeOfSetTypeAttribute = value[languagesInProject[0]].length;
-  // for (const countryCode in value) {
-  //   console.log('--- countryCode ---')
-  //   console.log(countryCode)
-  //   sizeOfSetTypeAttribute = value[countryCode].length
-  // }
-  console.log("--- sizeOfSetTypeAttribute ---");
-  console.log(sizeOfSetTypeAttribute);
-  let attrValues = [];
-  for (let idx = 0; idx < sizeOfSetTypeAttribute; ++idx) {
-    const attrValue = {};
-    for (const countryCode in value) {
-      attrValue[countryCode] = value[countryCode][idx];
-    }
-    console.log(attrValue);
-    attrValues.push(attrValue);
-  }
-  console.log("--- attrValues ---");
-  console.log(attrValues);
-  return attrValues;
-}
-
 function buildChangeNameUpdateAction(
   product,
   languagesInProject,
@@ -188,8 +121,6 @@ function buildSetAttributeUpdateActions(
       }
     }
     if (!isEmptyObj(value)) {
-      console.log(`${localizedStringAttributeName} : ${JSON.stringify(value)}`);
-
       const updateAction = {
         action: "setAttribute",
         variantId: masterVariant.id,

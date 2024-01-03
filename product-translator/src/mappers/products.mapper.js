@@ -25,8 +25,6 @@ const transformProductToString = (product, language) => {
 
 const transformProductAttributeToString = (variantAttributeValue, language) => {
   if (Array.isArray(variantAttributeValue)) {
-    console.log("--- Attr Value of LocalizedString Set ---");
-    console.log(variantAttributeValue);
     return variantAttributeValue.map(
       (attributeValue) => attributeValue?.[language].toString() || "",
     );

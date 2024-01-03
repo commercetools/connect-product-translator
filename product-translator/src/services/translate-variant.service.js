@@ -59,7 +59,8 @@ async function translate(
   );
 
   const masterVariant = product.masterData.staged.masterVariant;
-  const variants = product.masterData.staged.variants;
+  // TODO : translate non-master variants
+  // const variants = product.masterData.staged.variants;
   const translationResult = {};
   for (const localizedStringAttributeName of localizedStringAttributeNames) {
     let filteredMasterVariantAttributes = masterVariant?.attributes.filter(
