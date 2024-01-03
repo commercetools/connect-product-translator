@@ -8,20 +8,15 @@ import {
   isRequestTranslationStateMessage,
 } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
-import {
-  transformProductToString,
-  transformProductAttributeToString,
-} from "../mappers/products.mapper.js";
+import { translateVariant } from "../services/translate-variant.service.js";
+import { transformProductToString } from "../mappers/products.mapper.js";
 import { getLanguages } from "../client/languages.client.js";
 import { updateProduct } from "../client/products.client.js";
 import {
   defineSourceLanguage,
   getLanguageName,
 } from "../utils/languages.utils.js";
-import {
-  dummyTranslation,
-  dummyVariantTranslation,
-} from "../externals/openai.client.js";
+import { dummyTranslation } from "../externals/openai.client.js";
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
@@ -29,68 +24,6 @@ import {
   buildUpdateActions,
   buildSetAttributeUpdateActions,
 } from "../utils/actions.utils.js";
-
-async function translateVariant(
-  product,
-  languagesInProject,
-  localizedStringAttributeNames,
-) {
-  // Determine the source language by product name for translation purpose
-  const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
-
-  // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
-  const sourceLanguageName = getLanguageName(sourceLanguageCode);
-
-  const masterVariant = product.masterData.staged.masterVariant;
-  const variants = product.masterData.staged.variants;
-
-  let localizedStringAttributesValue = [];
-
-  for (const localizedStringAttributeName of localizedStringAttributeNames) {
-    let filteredMasterVariantAttributes = masterVariant?.attributes.filter(
-      (attribute) => attribute.name === localizedStringAttributeName,
-    );
-    let masterVariantAttributeValue = filteredMasterVariantAttributes.map(
-      (attribute) => attribute.value,
-    )[0];
-
-    const value = transformProductAttributeToString(
-      masterVariantAttributeValue,
-      sourceLanguageCode,
-    );
-    localizedStringAttributesValue.push(value);
-  }
-  const translationString = localizedStringAttributesValue.join("|");
-
-  // Define a list of language name to which the product fields are going to be translated
-  // e.g. ['en_US', 'en_EN'] => ['English', 'English']
-  let targetLanguageNames = languagesInProject
-    .filter((language) => language !== sourceLanguageCode)
-    .map((language) => getLanguageName(language));
-
-  // Remove duplicated language names.
-  // e.g. ['English', 'English'] => ['English']
-  targetLanguageNames = targetLanguageNames.filter(
-    (element, index) => targetLanguageNames.indexOf(element) === index,
-  );
-
-  // Translate the product fields into multiple languages and put result into a map as follow pattern
-  // e.g
-  // { english : 'Good Morning', german: 'Guten Tag' }
-  const translationResult = {};
-  for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await dummyVariantTranslation(
-      translationString,
-      sourceLanguageName,
-      targetLanguageName,
-    );
-    translationResult[targetLanguageName] = translatedString;
-  }
-  translationResult[sourceLanguageName] = translationString;
-  console.log("--- translation result ---");
-  console.log(translationResult);
-  return translationResult;
-}
 
 async function doTranslation(product, languagesInProject) {
   // Determine the source language by product name for translation purpose
@@ -179,24 +112,27 @@ async function translationHandler(request, response) {
     // Obtain the list of languages supported by current CT project
     const languagesInProject = await getLanguages();
 
-    const localizedStringAttributeNames =
-      getLocalizedStringAttributeNames(originalProduct);
-
     // Perform translation for localized strings inside product over different languages
     const translationResult = await doTranslation(
       updatedProduct,
       languagesInProject,
-    );
-    const variantTranslationResult = await translateVariant(
-      updatedProduct,
-      languagesInProject,
-      localizedStringAttributeNames,
     );
     let updateActions = buildUpdateActions(
       updatedProduct,
       languagesInProject,
       translationResult,
     );
+
+    const localizedStringAttributeNames =
+      getLocalizedStringAttributeNames(originalProduct);
+
+    const variantTranslationResult = await translateVariant(
+      updatedProduct,
+      languagesInProject,
+      localizedStringAttributeNames,
+    );
+    console.log("--- variantTranslationResult ---");
+    console.log(variantTranslationResult);
 
     const setAttributeUpdateActions = buildSetAttributeUpdateActions(
       updatedProduct,
@@ -206,7 +142,8 @@ async function translationHandler(request, response) {
     );
     updateActions.push(setAttributeUpdateActions);
     updateActions = updateActions.flat(Infinity);
-
+    console.log("--- updateActions ---");
+    console.log(updateActions);
     updatedProduct = await updateProduct(updatedProduct, updateActions);
 
     await updateProductState(updatedProduct, STATES.TRANSLATED);

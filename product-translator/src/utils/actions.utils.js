@@ -14,6 +14,73 @@ function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   return value;
 }
 
+function transformVariantTranslationResult(
+  languagesInProject,
+  translatedAttributeResult,
+) {
+  let value = {};
+
+  /** translatedAttributeResult = {
+    German: [ 'rotes Auto', 'blaues Auto' ],
+    English: [ 'blue car', 'red car' ]
+  }
+  **/
+  console.log("--- translatedAttributeResult ---");
+  console.log(translatedAttributeResult);
+  for (const language of languagesInProject) {
+    const languageName = getLanguageName(language);
+    const translatedValue = translatedAttributeResult?.[languageName];
+
+    if (translatedValue) {
+      value[language] = translatedValue;
+    }
+    console.log("--- Translated Value ---");
+    console.log(translatedValue);
+    console.log(Array.isArray(translatedValue));
+  }
+  /** value = {
+    de-DE : rotes Auto,blaues Auto
+    en-GB : blue car,red car
+    en-US : blue car,red car
+  } **/
+
+  /** typeValue =
+   * [
+      {
+        "en-GB": "red car",
+        "en-US": "red car",
+        "de-DE": "rotes Auto"
+      },
+      {
+        "en-GB": "blue car"
+        "en-US": "blue car",
+        "de-DE": "blaues Auto"
+      }
+   ]
+   * @type {number}
+   */
+  let sizeOfSetTypeAttribute = value[languagesInProject[0]].length;
+  // for (const countryCode in value) {
+  //   console.log('--- countryCode ---')
+  //   console.log(countryCode)
+  //   sizeOfSetTypeAttribute = value[countryCode].length
+  // }
+  console.log("--- sizeOfSetTypeAttribute ---");
+  console.log(sizeOfSetTypeAttribute);
+  let attrValues = [];
+  for (let idx = 0; idx < sizeOfSetTypeAttribute; ++idx) {
+    const attrValue = {};
+    for (const countryCode in value) {
+      attrValue[countryCode] = value[countryCode][idx];
+    }
+    console.log(attrValue);
+    attrValues.push(attrValue);
+  }
+  console.log("--- attrValues ---");
+  console.log(attrValues);
+  return attrValues;
+}
+
 function buildChangeNameUpdateAction(
   product,
   languagesInProject,
@@ -99,7 +166,8 @@ function buildSetMetaKeywordsUpdateAction(
   };
   return updateAction;
 }
-function buildSetAttributeUpdateActions(
+
+function createSetAttributeUpdateActions(
   product,
   languagesInProject,
   translationResult,
@@ -114,13 +182,52 @@ function buildSetAttributeUpdateActions(
       translationResult,
       pos,
     );
-    console.log(`${localizedStringAttributeName} : ${value}`);
+    console.log(`${localizedStringAttributeName} : ${JSON.stringify(value)}`);
 
     const updateAction = {
       action: "setAttribute",
       variantId: masterVariant.id,
       name: localizedStringAttributeName,
       value,
+    };
+    updateActions.push(updateAction);
+
+    pos++;
+  }
+
+  return updateActions;
+}
+
+function buildSetAttributeUpdateActions(
+  product,
+  languagesInProject,
+  translationResult,
+  localizedStringAttributeNames,
+) {
+  const updateActions = [];
+  const masterVariant = product.masterData.staged.masterVariant;
+  let pos = 0;
+  for (const localizedStringAttributeName of localizedStringAttributeNames) {
+    console.log("----- translationResult -----");
+    console.log(translationResult);
+    const transformedTranslationResult = transformVariantTranslationResult(
+      languagesInProject,
+      translationResult[localizedStringAttributeName],
+    );
+    console.log("----- transformedTranslationResult -----");
+    console.log(transformedTranslationResult);
+    const value = transformedTranslationResult[localizedStringAttributeName];
+    console.log(
+      `${localizedStringAttributeName} : ${JSON.stringify(
+        transformedTranslationResult,
+      )}`,
+    );
+
+    const updateAction = {
+      action: "setAttribute",
+      variantId: masterVariant.id,
+      name: localizedStringAttributeName,
+      value: transformedTranslationResult,
     };
     updateActions.push(updateAction);
 

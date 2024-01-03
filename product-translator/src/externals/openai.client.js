@@ -12,6 +12,10 @@ async function dummyVariantTranslation(message, sourceLang, targetLang) {
   if (targetLang === "German") return "|blaue|||||";
   else if (targetLang === "English") return "|blue|||||";
 }
+function translateDummySetTypeAttribute(message, sourceLang, targetLang) {
+  if (targetLang === "German") return "rotes Auto|blaues Auto";
+  else if (targetLang === "English") return "red car|blue car";
+}
 
 async function translate(message, sourceLang, targetLang) {
   if (sourceLang === targetLang) return message;
@@ -35,4 +39,9 @@ async function translate(message, sourceLang, targetLang) {
   return translatedMessage;
 }
 
-export { translate, dummyTranslation, dummyVariantTranslation };
+export {
+  translate,
+  dummyTranslation,
+  dummyVariantTranslation,
+  translateDummySetTypeAttribute,
+};

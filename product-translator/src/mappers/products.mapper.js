@@ -23,18 +23,15 @@ const transformProductToString = (product, language) => {
   return localizedFields.join("|");
 };
 
-const transformProductAttributeToString = (
-  masterVariantAttributeValue,
-  language,
-) => {
-  if (Array.isArray(masterVariantAttributeValue)) {
-    return masterVariantAttributeValue.map((attributeValue) => {
-      console.log(attributeValue);
-
-      return attributeValue?.[language].toString() || "";
-    });
+const transformProductAttributeToString = (variantAttributeValue, language) => {
+  if (Array.isArray(variantAttributeValue)) {
+    console.log("--- Attr Value of LocalizedString Set ---");
+    console.log(variantAttributeValue);
+    return variantAttributeValue.map(
+      (attributeValue) => attributeValue?.[language].toString() || "",
+    );
   } else {
-    return masterVariantAttributeValue?.[language];
+    return variantAttributeValue?.[language];
   }
 };
 
