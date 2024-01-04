@@ -8,8 +8,8 @@ import {
   isRequestTranslationStateMessage,
 } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
-import { translate as translateProduct } from "../services/translate-product.service.js";
-import { translate as translateVariant } from "../services/translate-variant.service.js";
+import { processTranslation as translateProduct } from "../services/translate-product.service.js";
+import { processTranslation as translateVariant } from "../services/translate-variant.service.js";
 
 import { getLanguages } from "../client/languages.client.js";
 import { updateProduct } from "../client/products.client.js";
@@ -17,10 +17,6 @@ import { updateProduct } from "../client/products.client.js";
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
-import {
-  buildUpdateActions,
-  buildSetAttributeUpdateActions,
-} from "../utils/actions.utils.js";
 
 import { getLocalizedStringAttributeNames } from "../utils/product.utils.js";
 
@@ -45,6 +41,8 @@ async function translationHandler(request, response) {
 
     const productId = pubSubMessage.resource.id;
     originalProduct = await getProductById(productId);
+    const localizedStringAttributeNames =
+      getLocalizedStringAttributeNames(originalProduct);
 
     // Change product state to 'translation in process'
     updatedProduct = await updateProductState(
@@ -55,36 +53,19 @@ async function translationHandler(request, response) {
     // Obtain the list of languages supported by current CT project
     const languagesInProject = await getLanguages();
 
-    // Perform translation for localized strings inside product over different languages
+    // Perform translation for localized strings inside product and its variants over different languages
+    let [productUpdateActions, variantsUpdateActions] = await Promise.all([
+      translateProduct(updatedProduct, languagesInProject),
+      translateVariant(
+        updatedProduct,
+        languagesInProject,
+        localizedStringAttributeNames,
+      ),
+    ]);
 
-    const localizedStringAttributeNames =
-      getLocalizedStringAttributeNames(originalProduct);
-
-    let [productTranslationResult, variantTranslationResults] =
-      await Promise.all([
-        translateProduct(updatedProduct, languagesInProject),
-        translateVariant(
-          updatedProduct,
-          languagesInProject,
-          localizedStringAttributeNames,
-        ),
-      ]);
-
-    let updateActions = buildUpdateActions(
-      updatedProduct,
-      languagesInProject,
-      productTranslationResult,
-    );
-
-    const setAttributeUpdateActions = buildSetAttributeUpdateActions(
-      updatedProduct,
-      languagesInProject,
-      variantTranslationResults,
-      localizedStringAttributeNames,
-    );
-    updateActions.push(setAttributeUpdateActions);
-    updateActions = updateActions.flat(Infinity);
-    updatedProduct = await updateProduct(updatedProduct, updateActions);
+    productUpdateActions.push(variantsUpdateActions);
+    productUpdateActions = productUpdateActions.flat(Infinity);
+    updatedProduct = await updateProduct(updatedProduct, productUpdateActions);
 
     await updateProductState(updatedProduct, STATES.TRANSLATED);
   } catch (err) {

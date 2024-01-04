@@ -5,6 +5,7 @@ import {
 import { transformProductAttributeToString } from "../mappers/products.mapper.js";
 import { executeTranslation } from "../externals/openai.client.js";
 import { isEmptyObj } from "../utils/object.utils.js";
+import { buildSetAttributeUpdateActions } from "../utils/actions.utils.js";
 
 async function translateStringTypeAttribute(
   variantAttributeValue,
@@ -38,7 +39,14 @@ async function translateStringTypeAttribute(
   return translationResult;
 }
 
-async function translate(
+/**
+ *
+ * @param product - product with translation in process state
+ * @param languagesInProject - language code supported by current CT project
+ * @param localizedStringAttributeNames - List of attribute names which belong to localized String type
+ * @returns updateActions - A list of updateAction containing the translated string
+ */
+async function processTranslation(
   product,
   languagesInProject,
   localizedStringAttributeNames,
@@ -91,7 +99,12 @@ async function translate(
     translationResults.push(translationResult);
   }
 
-  return translationResults;
+  return buildSetAttributeUpdateActions(
+    product,
+    languagesInProject,
+    translationResults,
+    localizedStringAttributeNames,
+  );
 }
 
-export { translate };
+export { processTranslation };

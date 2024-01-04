@@ -4,8 +4,15 @@ import {
 } from "../utils/languages.utils.js";
 import { transformProductToString } from "../mappers/products.mapper.js";
 import { executeTranslation } from "../externals/openai.client.js";
+import { buildUpdateActions } from "../utils/actions.utils.js";
 
-async function translate(product, languagesInProject) {
+/**
+ *
+ * @param product - product with translation in process state
+ * @param languagesInProject - language code supported by current CT project
+ * @returns updateActions - A list of updateAction containing the translated string
+ */
+async function processTranslation(product, languagesInProject) {
   // Determine the source language by product name for translation purpose
   const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
 
@@ -43,6 +50,11 @@ async function translate(product, languagesInProject) {
     translationResult[targetLanguageName] = translatedString;
   }
   translationResult[sourceLanguageName] = translationString;
-  return translationResult;
+  let updateActions = buildUpdateActions(
+    product,
+    languagesInProject,
+    translationResult,
+  );
+  return updateActions;
 }
-export { translate };
+export { processTranslation };
