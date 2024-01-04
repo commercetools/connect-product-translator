@@ -19,7 +19,9 @@ async function executeTranslation(message, sourceLang, targetLang) {
   });
 
   const translatedMessage = completion.choices[0]?.message?.content;
-  logger.info(translatedMessage);
+  logger.info(
+    `Translate the following ${sourceLang} text to ${targetLang} : ${message} ->  ${translatedMessage}`,
+  );
   return translatedMessage;
 }
 

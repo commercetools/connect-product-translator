@@ -1,7 +1,7 @@
 import { logger } from "../utils/logger.utils.js";
 import {
-  HTTP_STATUS_SERVER_ERROR,
   HTTP_STATUS_SUCCESS_NO_CONTENT,
+  HTTP_STATUS_SUCCESS_ACCEPTED,
 } from "../constants/http-status.constants.js";
 import {
   validateRequest,
@@ -50,6 +50,11 @@ async function translationHandler(request, response) {
       STATES.TRANSLATION_IN_PROCESS,
     );
 
+    logger.info(
+      "Product is in translation process. Acknowledgment is sent back to pub/sub.",
+    );
+    response.status(HTTP_STATUS_SUCCESS_ACCEPTED).send();
+
     // Obtain the list of languages supported by current CT project
     const languagesInProject = await getLanguages();
 
@@ -68,6 +73,7 @@ async function translationHandler(request, response) {
     updatedProduct = await updateProduct(updatedProduct, productUpdateActions);
 
     await updateProductState(updatedProduct, STATES.TRANSLATED);
+    logger.info(`Translation product ${updatedProduct.id} completed.`);
   } catch (err) {
     logger.error(err);
     try {
@@ -75,12 +81,7 @@ async function translationHandler(request, response) {
     } catch (updateProductStateError) {
       logger.error(updateProductStateError);
     }
-    if (err.statusCode) return response.status(err.statusCode).send(err);
-    return response.status(HTTP_STATUS_SERVER_ERROR).send(err);
   }
-
-  // Return the response for the client
-  return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 }
 
 export { translationHandler };
