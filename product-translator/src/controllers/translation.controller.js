@@ -60,7 +60,7 @@ async function translationHandler(request, response) {
     const localizedStringAttributeNames =
       getLocalizedStringAttributeNames(originalProduct);
 
-    let [productTranslationResult, variantTranslationResult] =
+    let [productTranslationResult, variantTranslationResults] =
       await Promise.all([
         translateProduct(updatedProduct, languagesInProject),
         translateVariant(
@@ -79,7 +79,7 @@ async function translationHandler(request, response) {
     const setAttributeUpdateActions = buildSetAttributeUpdateActions(
       updatedProduct,
       languagesInProject,
-      variantTranslationResult,
+      variantTranslationResults,
       localizedStringAttributeNames,
     );
     updateActions.push(setAttributeUpdateActions);

@@ -58,32 +58,40 @@ async function translate(
     (element, index) => targetLanguageNames.indexOf(element) === index,
   );
 
-  const masterVariant = product.masterData.staged.masterVariant;
-  // TODO : translate non-master variants
-  // const variants = product.masterData.staged.variants;
-  const translationResult = {};
-  for (const localizedStringAttributeName of localizedStringAttributeNames) {
-    let filteredMasterVariantAttributes = masterVariant?.attributes.filter(
-      (attribute) => attribute.name === localizedStringAttributeName,
-    );
-    let masterVariantAttributeValue = filteredMasterVariantAttributes.map(
-      (attribute) => attribute.value,
-    )[0];
+  let variants = [];
+  variants.push(product.masterData.staged.masterVariant);
+  if (product.masterData.staged.variants.length > 0)
+    variants.push(product.masterData.staged.variants);
+  variants = variants.flat(Infinity);
 
-    if (Array.isArray(masterVariantAttributeValue)) {
-      // TODO : translate Set type attribute
-    } else {
-      const result = await translateStringTypeAttribute(
-        masterVariantAttributeValue,
-        targetLanguageNames,
-        sourceLanguageCode,
+  let translationResult;
+  const translationResults = [];
+  for (const variant of variants) {
+    translationResult = {};
+    for (const localizedStringAttributeName of localizedStringAttributeNames) {
+      let filteredVariantAttributes = variant?.attributes.filter(
+        (attribute) => attribute.name === localizedStringAttributeName,
       );
+      let variantAttributeValue = filteredVariantAttributes.map(
+        (attribute) => attribute.value,
+      )[0];
 
-      translationResult[localizedStringAttributeName] = result;
+      if (Array.isArray(variantAttributeValue)) {
+        // TODO : translate Set type attribute
+      } else {
+        const result = await translateStringTypeAttribute(
+          variantAttributeValue,
+          targetLanguageNames,
+          sourceLanguageCode,
+        );
+        translationResult.variantId = variant.id;
+        translationResult[localizedStringAttributeName] = result;
+      }
     }
+    translationResults.push(translationResult);
   }
 
-  return translationResult;
+  return translationResults;
 }
 
 export { translate };

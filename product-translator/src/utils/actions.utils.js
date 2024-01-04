@@ -104,30 +104,32 @@ function buildSetMetaKeywordsUpdateAction(
 function buildSetAttributeUpdateActions(
   product,
   languagesInProject,
-  translationResult,
+  variantTranslationResults,
   localizedStringAttributeNames,
 ) {
   const updateActions = [];
-  const masterVariant = product.masterData.staged.masterVariant;
-
-  for (const localizedStringAttributeName of localizedStringAttributeNames) {
-    const value = {};
-    for (const language of languagesInProject) {
-      const languageName = getLanguageName(language);
-      const translatedString =
-        translationResult?.[localizedStringAttributeName]?.[languageName];
-      if (translatedString) {
-        value[language] = translatedString;
+  for (const variantTransaltionResult of variantTranslationResults) {
+    for (const localizedStringAttributeName of localizedStringAttributeNames) {
+      const value = {};
+      for (const language of languagesInProject) {
+        const languageName = getLanguageName(language);
+        const translatedString =
+          variantTransaltionResult?.[localizedStringAttributeName]?.[
+            languageName
+          ];
+        if (translatedString) {
+          value[language] = translatedString;
+        }
       }
-    }
-    if (!isEmptyObj(value)) {
-      const updateAction = {
-        action: "setAttribute",
-        variantId: masterVariant.id,
-        name: localizedStringAttributeName,
-        value,
-      };
-      updateActions.push(updateAction);
+      if (!isEmptyObj(value)) {
+        const updateAction = {
+          action: "setAttribute",
+          variantId: variantTransaltionResult.variantId,
+          name: localizedStringAttributeName,
+          value,
+        };
+        updateActions.push(updateAction);
+      }
     }
   }
 
