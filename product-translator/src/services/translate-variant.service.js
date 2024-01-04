@@ -4,7 +4,7 @@ import {
 } from "../utils/languages.utils.js";
 import { transformProductAttributeToString } from "../mappers/products.mapper.js";
 import { executeTranslation } from "../externals/openai.client.js";
-import { isEmptyObj } from "../utils/objects.utils.js";
+import { isEmptyObj } from "../utils/object.utils.js";
 
 async function translateStringTypeAttribute(
   variantAttributeValue,

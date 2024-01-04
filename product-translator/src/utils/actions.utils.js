@@ -1,6 +1,6 @@
 import { getLanguageName } from "./languages.utils.js";
 import { TRANSLATION_FIELD_POS } from "../constants/translation.constants.js";
-import { isEmptyObj } from "./objects.utils.js";
+import { isEmptyObj } from "./object.utils.js";
 
 function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   const value = {};
