@@ -22,20 +22,7 @@ import {
   buildSetAttributeUpdateActions,
 } from "../utils/actions.utils.js";
 
-function getLocalizedStringAttributeNames(product) {
-  const attributeDefinitions = product.productType.obj?.attributes;
-  const localizedStringAttributeNames = attributeDefinitions
-    .filter((attributeDefinition) => {
-      return (
-        attributeDefinition?.type?.name === "ltext" ||
-        (attributeDefinition?.type?.name === "set" &&
-          attributeDefinition?.type?.elementType?.name === "ltext")
-      );
-    })
-    .map((attributeDefinition) => attributeDefinition.name);
-
-  return localizedStringAttributeNames;
-}
+import { getLocalizedStringAttributeNames } from "../utils/product.utils.js";
 
 async function translationHandler(request, response) {
   let originalProduct, updatedProduct;
