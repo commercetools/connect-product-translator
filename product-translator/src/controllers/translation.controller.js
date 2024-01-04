@@ -56,23 +56,24 @@ async function translationHandler(request, response) {
     const languagesInProject = await getLanguages();
 
     // Perform translation for localized strings inside product over different languages
-    const translationResult = await translateProduct(
-      updatedProduct,
-      languagesInProject,
-    );
-    let updateActions = buildUpdateActions(
-      updatedProduct,
-      languagesInProject,
-      translationResult,
-    );
 
     const localizedStringAttributeNames =
       getLocalizedStringAttributeNames(originalProduct);
 
-    const variantTranslationResult = await translateVariant(
+    let [productTranslationResult, variantTranslationResult] =
+      await Promise.all([
+        translateProduct(updatedProduct, languagesInProject),
+        translateVariant(
+          updatedProduct,
+          languagesInProject,
+          localizedStringAttributeNames,
+        ),
+      ]);
+
+    let updateActions = buildUpdateActions(
       updatedProduct,
       languagesInProject,
-      localizedStringAttributeNames,
+      productTranslationResult,
     );
 
     const setAttributeUpdateActions = buildSetAttributeUpdateActions(
