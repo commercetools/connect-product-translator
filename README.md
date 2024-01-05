@@ -17,8 +17,8 @@ Users are expected to create API client responsible for changing state, fetching
 #### 2. commercetools composable commerce language setup
 Users are expected to define the languages supported in the composable commerce project.
 
-#### 3. commercetools composable commerce product details setup
-Users are expected to fill in the text values in the product and its variant attributes with default language. The connect application defines the source language for translation by adapting the language with non-empty value in product name.
+#### 3. commercetools composable commerce product details initialization
+Users are expected to fill in the text values in the product and its variant attributes with default language. The connect application defines the source language for translation by adapting the language with non-empty value in product name. For example, if product details are required to translate from English to all other languages, product name needs to be defined in `en-GB` locale. 
 
 #### 4. external system
 Users are expected to provide API token in OpenAI. Those details are taken as input as an environment variable / configuration for connect. The API token of OpenAI can be provided as environment variables (configuration for connect) `OPENAI_API_KEY`.For details, please read [Deployment Configuration](./README.md#Deployment Configuration).
