@@ -1,14 +1,17 @@
 import { createApiRoot } from "./create.client.js";
 import CustomError from "../errors/custom.error.js";
 import { HTTP_STATUS_SUCCESS_ACCEPTED } from "../constants/http-status.constants.js";
-
+const queryArgs = {
+  withTotal: false,
+  expand: ["productType"],
+};
 export async function getProductById(productId) {
   return await createApiRoot()
     .products()
     .withId({
       ID: Buffer.from(productId).toString(),
     })
-    .get()
+    .get({ queryArgs })
     .execute()
     .then((response) => response.body)
     .catch((error) => {

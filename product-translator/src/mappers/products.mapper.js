@@ -23,10 +23,12 @@ const transformProductToString = (product, language) => {
   return localizedFields.join("|");
 };
 
-const transformProductAttributeToString = () => {
-  // TODO
-  //  1. Identify attributes from product type which belongs to localized String.
-  //  2. Transform the product attributes into String.
+const transformProductAttributeToString = (variantAttributeValue, language) => {
+  if (Array.isArray(variantAttributeValue)) {
+    // TODO : transform Set type attribute value
+  } else {
+    return variantAttributeValue?.[language];
+  }
 };
 
 export { transformProductToString, transformProductAttributeToString };

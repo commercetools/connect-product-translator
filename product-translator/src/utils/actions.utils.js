@@ -1,5 +1,6 @@
 import { getLanguageName } from "./languages.utils.js";
 import { TRANSLATION_FIELD_POS } from "../constants/translation.constants.js";
+import { isEmptyObj } from "./object.utils.js";
 
 function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
   const value = {};
@@ -100,6 +101,41 @@ function buildSetMetaKeywordsUpdateAction(
   return updateAction;
 }
 
+function buildSetAttributeUpdateActions(
+  product,
+  languagesInProject,
+  variantTranslationResults,
+  localizedStringAttributeNames,
+) {
+  const updateActions = [];
+  for (const variantTransaltionResult of variantTranslationResults) {
+    for (const localizedStringAttributeName of localizedStringAttributeNames) {
+      const value = {};
+      for (const language of languagesInProject) {
+        const languageName = getLanguageName(language);
+        const translatedString =
+          variantTransaltionResult?.[localizedStringAttributeName]?.[
+            languageName
+          ];
+        if (translatedString) {
+          value[language] = translatedString;
+        }
+      }
+      if (!isEmptyObj(value)) {
+        const updateAction = {
+          action: "setAttribute",
+          variantId: variantTransaltionResult.variantId,
+          name: localizedStringAttributeName,
+          value,
+        };
+        updateActions.push(updateAction);
+      }
+    }
+  }
+
+  return updateActions;
+}
+
 function buildUpdateActions(product, languagesInProject, translationResult) {
   const updateActions = [];
   updateActions.push(
@@ -132,4 +168,4 @@ function buildUpdateActions(product, languagesInProject, translationResult) {
   return updateActions;
 }
 
-export { buildUpdateActions };
+export { buildUpdateActions, buildSetAttributeUpdateActions };

@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 import { logger } from "../utils/logger.utils.js";
 
-async function translate(message, sourceLang, targetLang) {
+async function executeTranslation(message, sourceLang, targetLang) {
   if (sourceLang === targetLang) return message;
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -19,8 +19,10 @@ async function translate(message, sourceLang, targetLang) {
   });
 
   const translatedMessage = completion.choices[0]?.message?.content;
-  logger.info(translatedMessage);
+  logger.info(
+    `Translate the following ${sourceLang} text to ${targetLang} : ${message} ->  ${translatedMessage}`,
+  );
   return translatedMessage;
 }
 
-export { translate };
+export { executeTranslation };

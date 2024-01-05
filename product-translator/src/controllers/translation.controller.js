@@ -1,69 +1,27 @@
 import { logger } from "../utils/logger.utils.js";
 import {
-  HTTP_STATUS_SERVER_ERROR,
   HTTP_STATUS_SUCCESS_NO_CONTENT,
+  HTTP_STATUS_SUCCESS_ACCEPTED,
 } from "../constants/http-status.constants.js";
 import {
   validateRequest,
   isRequestTranslationStateMessage,
 } from "../validators/message.validators.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
-import { transformProductToString } from "../mappers/products.mapper.js";
+import { processTranslation as translateProduct } from "../services/translate-product.service.js";
+import { processTranslation as translateVariant } from "../services/translate-variant.service.js";
+
 import { getLanguages } from "../client/languages.client.js";
 import { updateProduct } from "../client/products.client.js";
-import {
-  defineSourceLanguage,
-  getLanguageName,
-} from "../utils/languages.utils.js";
-import { translate } from "../externals/openai.client.js";
+
 import { getProductById } from "../client/products.client.js";
 import { updateProductState } from "../client/products.client.js";
 import { STATES } from "../constants/states.constants.js";
-import { buildUpdateActions } from "../utils/actions.utils.js";
 
-async function doTranslation(product, languagesInProject) {
-  // Determine the source language by product name for translation purpose
-  const sourceLanguageCode = defineSourceLanguage(product, languagesInProject);
-
-  // Obtain the language name based on given language code for AI prompt. e.g. en_GB => English
-  const sourceLanguageName = getLanguageName(sourceLanguageCode);
-
-  // Transform product into a single line in based on the given language code.
-  const translationString = transformProductToString(
-    product,
-    sourceLanguageCode,
-  );
-
-  // Define a list of language name to which the product fields are going to be translated
-  // e.g. ['en_US', 'en_EN'] => ['English', 'English']
-  let targetLanguageNames = languagesInProject
-    .filter((language) => language !== sourceLanguageCode)
-    .map((language) => getLanguageName(language));
-
-  // Remove duplicated language names.
-  // e.g. ['English', 'English'] => ['English']
-  targetLanguageNames = targetLanguageNames.filter(
-    (element, index) => targetLanguageNames.indexOf(element) === index,
-  );
-
-  // Translate the product fields into multiple languages and put result into a map as follow pattern
-  // e.g
-  // { english : 'Good Morning', german: 'Guten Tag' }
-  const translationResult = {};
-  for (const targetLanguageName of targetLanguageNames) {
-    const translatedString = await translate(
-      translationString,
-      sourceLanguageName,
-      targetLanguageName,
-    );
-    translationResult[targetLanguageName] = translatedString;
-  }
-  translationResult[sourceLanguageName] = translationString;
-  return translationResult;
-}
+import { getLocalizedStringAttributeNames } from "../utils/product.utils.js";
 
 async function translationHandler(request, response) {
-  let product;
+  let originalProduct, updatedProduct;
   try {
     logger.info("Received product state changed message.");
 
@@ -82,37 +40,48 @@ async function translationHandler(request, response) {
       return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 
     const productId = pubSubMessage.resource.id;
-    product = await getProductById(productId);
+    originalProduct = await getProductById(productId);
+    const localizedStringAttributeNames =
+      getLocalizedStringAttributeNames(originalProduct);
 
     // Change product state to 'translation in process'
-    product = await updateProductState(product, STATES.TRANSLATION_IN_PROCESS);
+    updatedProduct = await updateProductState(
+      originalProduct,
+      STATES.TRANSLATION_IN_PROCESS,
+    );
+
+    logger.info(
+      "Product is in translation process. Acknowledgment is sent back to pub/sub.",
+    );
+    response.status(HTTP_STATUS_SUCCESS_ACCEPTED).send();
 
     // Obtain the list of languages supported by current CT project
     const languagesInProject = await getLanguages();
 
-    // Perform translation for localized strings inside product over different languages
-    const translationResult = await doTranslation(product, languagesInProject);
+    // Perform translation for localized strings inside product and its variants over different languages
+    let [productUpdateActions, variantsUpdateActions] = await Promise.all([
+      translateProduct(updatedProduct, languagesInProject),
+      translateVariant(
+        updatedProduct,
+        languagesInProject,
+        localizedStringAttributeNames,
+      ),
+    ]);
 
-    const updateActions = buildUpdateActions(
-      product,
-      languagesInProject,
-      translationResult,
-    );
-    product = await updateProduct(product, updateActions);
-    await updateProductState(product, STATES.TRANSLATED);
+    productUpdateActions.push(variantsUpdateActions);
+    productUpdateActions = productUpdateActions.flat(Infinity);
+    updatedProduct = await updateProduct(updatedProduct, productUpdateActions);
+
+    await updateProductState(updatedProduct, STATES.TRANSLATED);
+    logger.info(`Translation product ${updatedProduct.id} completed.`);
   } catch (err) {
     logger.error(err);
     try {
-      await updateProductState(product, STATES.TRANSLATION_FAILED);
+      await updateProductState(updatedProduct, STATES.TRANSLATION_FAILED);
     } catch (updateProductStateError) {
       logger.error(updateProductStateError);
     }
-    if (err.statusCode) return response.status(err.statusCode).send(err);
-    return response.status(HTTP_STATUS_SERVER_ERROR).send(err);
   }
-
-  // Return the response for the client
-  return response.status(HTTP_STATUS_SUCCESS_NO_CONTENT).send();
 }
 
 export { translationHandler };
