@@ -18,3 +18,5 @@ deployAs:
           description: commercetools Composable Commerce client secret
         - key: CTP_SCOPE
           description: commercetools Composable Commerce client scope
+        - key: OPENAI_API_KEY
+          description: API token used to communicate with OpenAI platform
