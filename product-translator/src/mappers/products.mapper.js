@@ -25,9 +25,7 @@ const transformProductToString = (product, language) => {
 
 const transformProductAttributeToString = (variantAttributeValue, language) => {
   if (Array.isArray(variantAttributeValue)) {
-    return variantAttributeValue.map(
-      (attributeValue) => attributeValue?.[language].toString() || "",
-    );
+    // TODO : transform Set type attribute value
   } else {
     return variantAttributeValue?.[language];
   }
