@@ -1,6 +1,12 @@
 import CustomError from "../errors/custom.error.js";
-import { HTTP_STATUS_SUCCESS_ACCEPTED } from "../constants/http-status.constants.js";
-import { MESSAGE_TYPE } from "../constants/message-type.constants.js";
+import {
+  HTTP_STATUS_SUCCESS_ACCEPTED,
+  HTTP_STATUS_SUCCESS_NO_CONTENT,
+} from "../constants/http-status.constants.js";
+import {
+  MESSAGE_TYPE,
+  NOTIFICATION_TYPE_RESOURCE_CREATED,
+} from "../constants/message-type.constants.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
 import { STATES } from "../constants/states.constants.js";
 import { getStateByKey } from "../client/states.client.js";
@@ -25,7 +31,14 @@ function validateRequest(request) {
 
   const encodedMessageBody = request.body.message.data;
   const messageBody = decodeToJson(encodedMessageBody);
-  logger.info(`Incoming message body : ${JSON.stringify(messageBody)}`)
+  logger.info(`Incoming message body : ${JSON.stringify(messageBody)}`);
+
+  if (NOTIFICATION_TYPE_RESOURCE_CREATED === messageBody.notificationType) {
+    throw new CustomError(
+      HTTP_STATUS_SUCCESS_NO_CONTENT,
+      `Incoming message is about subscription resource creation. Skip handling the message`,
+    );
+  }
 
   // Make sure incoming message contains correct notification type
   if (!MESSAGE_TYPE.includes(messageBody.type)) {

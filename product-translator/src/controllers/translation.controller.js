@@ -81,8 +81,7 @@ async function translationHandler(request, response) {
       } catch (updateProductStateError) {
         logger.error(updateProductStateError);
       }
-    }
-    else {
+    } else {
       return response.status(err.statusCode).send();
     }
   }
