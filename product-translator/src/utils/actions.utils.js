@@ -8,7 +8,7 @@ function getUpdatedLocalizedString(languagesInProject, translationResult, pos) {
     const languageName = getLanguageName(language);
     const translatedString = translationResult?.[languageName];
     if (translatedString) {
-      const translatedProductName = translatedString.split("|")[pos];
+      const translatedProductName = translatedString.split("[#]")[pos];
       value[language] = translatedProductName;
     }
   }

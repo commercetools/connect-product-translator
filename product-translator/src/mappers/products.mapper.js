@@ -20,7 +20,7 @@ const transformProductToString = (product, language) => {
   localizedFields[TRANSLATION_FIELD_POS.META_KEYWORDS] = productMetaKeywords;
   localizedFields[TRANSLATION_FIELD_POS.META_TITLE] = productMetaTitle;
 
-  return localizedFields.join("|");
+  return localizedFields.join("[#]");
 };
 
 const transformProductAttributeToString = (variantAttributeValue, language) => {
