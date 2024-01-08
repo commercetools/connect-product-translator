@@ -31,7 +31,6 @@ async function translationHandler(request, response) {
     // Receive the Pub/Sub message
     const encodedPubSubMessage = request.body.message.data;
     const pubSubMessage = decodeToJson(encodedPubSubMessage);
-    logger.info(JSON.stringify(pubSubMessage));
 
     // Skip handling non-translation state
     const isRequestTranslationState =
@@ -76,10 +75,15 @@ async function translationHandler(request, response) {
     logger.info(`Translation product ${updatedProduct.id} completed.`);
   } catch (err) {
     logger.error(err);
-    try {
-      await updateProductState(updatedProduct, STATES.TRANSLATION_FAILED);
-    } catch (updateProductStateError) {
-      logger.error(updateProductStateError);
+    if (updatedProduct) {
+      try {
+        await updateProductState(updatedProduct, STATES.TRANSLATION_FAILED);
+      } catch (updateProductStateError) {
+        logger.error(updateProductStateError);
+      }
+    }
+    else {
+      return response.status(err.statusCode).send();
     }
   }
 }

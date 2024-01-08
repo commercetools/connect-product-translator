@@ -4,6 +4,7 @@ import { MESSAGE_TYPE } from "../constants/message-type.constants.js";
 import { decodeToJson } from "../utils/decoder.utils.js";
 import { STATES } from "../constants/states.constants.js";
 import { getStateByKey } from "../client/states.client.js";
+import { logger } from "../utils/logger.utils.js";
 
 function validateRequest(request) {
   // Check request body
@@ -24,6 +25,7 @@ function validateRequest(request) {
 
   const encodedMessageBody = request.body.message.data;
   const messageBody = decodeToJson(encodedMessageBody);
+  logger.info(`Incoming message body : ${JSON.stringify(messageBody)}`)
 
   // Make sure incoming message contains correct notification type
   if (!MESSAGE_TYPE.includes(messageBody.type)) {
