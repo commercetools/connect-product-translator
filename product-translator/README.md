@@ -11,7 +11,7 @@ The translation can be divided into two processes, which are executed asynchrono
 - Variants Translation
 
 ## Product Translation
-The translator concatenates the following product fields into a single-line text with separator '|':
+The translator concatenates the following product fields into a single-line text with separator '[#]':
 1. Product Name
 2. Product Description
 3. Meta Description
